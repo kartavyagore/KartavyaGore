@@ -113,7 +113,7 @@ export function GlassmorphismPortfolioBlock() {
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="text-2xl font-semibold tracking-tight text-white md:text-3xl"
                 >
-                  Kartavya Gore, Software Engineer
+                  Kartavya Datta Gore, Software Engineer
                 </motion.h2>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -191,7 +191,7 @@ export function GlassmorphismPortfolioBlock() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="space-y-1"
                   >
-                    <h3 className="text-2xl font-semibold tracking-tight text-white">Kartavya Gore</h3>
+                    <h3 className="text-2xl font-semibold tracking-tight text-white">Kartavya Datta Gore</h3>
                     <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/55">
                       Java Full Stack Engineer
                     </p>

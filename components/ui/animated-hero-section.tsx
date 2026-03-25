@@ -198,7 +198,7 @@ export function PromptingIsAllYouNeed() {
       const BALL_SPEED = 6 * scale
 
       pixelsRef.current = []
-      const words = ["KARTAVYA GORE", "SOFTWARE ENGINEER"]
+      const words = ["KARTAVYA DATTA GORE", "SOFTWARE ENGINEER"]
 
       const calculateWordWidth = (word: string, pixelSize: number) => {
         return (
