@@ -2,6 +2,9 @@ import { Suspense } from "react"
 import { getAllBlogsFromDb } from "@/lib/blogs-db"
 import { BlogsClient } from "@/components/ui/blogs-client"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export default async function BlogsPage() {
   const blogPosts = await getAllBlogsFromDb()
   return (

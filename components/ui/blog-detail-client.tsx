@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import type { BlogPost } from "@/lib/blogs"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, X } from "lucide-react"
 import { toRenderableImageSrc } from "@/lib/image-url"
 import { ToastContainer } from "./toast"
 import PasskeyLogin from "./passkey-login"
@@ -25,6 +25,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   const [adminPassword, setAdminPassword] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
+  const [showImagePreview, setShowImagePreview] = useState(false)
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: "success" | "error" | "warning" }>>([])
   const toastCounterRef = useRef(0)
 
@@ -256,11 +257,17 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
         <div className="mb-8 rounded-2xl border border-white/15 bg-gradient-to-r from-white/[0.08] via-white/[0.03] to-transparent p-6">
           {imageSrc ? (
             <div className="mb-6 overflow-hidden rounded-xl border border-white/10">
-              <img
-                src={imageSrc}
-                alt={post.title}
-                className="h-64 w-full object-cover md:h-80"
-              />
+              <button
+                type="button"
+                onClick={() => setShowImagePreview(true)}
+                className="block w-full cursor-zoom-in"
+              >
+                <img
+                  src={imageSrc}
+                  alt={post.title}
+                  className="h-64 w-full object-cover md:h-80"
+                />
+              </button>
             </div>
           ) : null}
           <p className="text-xs uppercase tracking-[0.18em] text-white/55">
@@ -288,6 +295,38 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
           ))}
         </div>
       </article>
+
+      <AnimatePresence>
+        {showImagePreview && imageSrc ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
+            onClick={() => setShowImagePreview(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setShowImagePreview(false)}
+              className="absolute right-4 top-4 rounded-full border border-white/25 bg-black/40 p-2 text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Close image preview"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              src={imageSrc}
+              alt={post.title}
+              className="max-h-[90vh] max-w-[95vw] rounded-xl border border-white/15 object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showAuthModal && (
