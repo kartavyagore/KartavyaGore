@@ -2,20 +2,13 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { FlipLink } from "@/components/ui/flip-links"
 import { motion, type Variants } from "framer-motion"
-import type { LucideIcon } from "lucide-react"
-import { ArrowUpRight, Briefcase, FolderGit2, Mail, X } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 type Highlight = {
   title: string
   description: string
-}
-
-type SocialLink = {
-  label: string
-  handle: string
-  href: string
-  icon: LucideIcon
 }
 
 const highlights: Highlight[] = [
@@ -32,56 +25,6 @@ const highlights: Highlight[] = [
     description: "Open for full-time software engineering opportunities and impactful collaborations.",
   },
 ]
-
-const socialLinks: SocialLink[] = [
-  {
-    label: "X",
-    handle: "@kartavya",
-    href: "https://x.com",
-    icon: X,
-  },
-  {
-    label: "LinkedIn",
-    handle: "Kartavya Gore",
-    href: "https://linkedin.com/in/kartavya-gore",
-    icon: Briefcase,
-  },
-  {
-    label: "GitHub",
-    handle: "kartavyagore",
-    href: "https://github.com/kartavyagore",
-    icon: FolderGit2,
-  },
-  {
-    label: "Email",
-    handle: "kartavyagore0@gmail.com",
-    href: "mailto:kartavyagore0@gmail.com",
-    icon: Mail,
-  },
-]
-
-const listVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      staggerChildren: 0.08,
-    },
-  },
-}
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.35,
-    },
-  },
-}
 
 export function GlassmorphismPortfolioBlock() {
   return (
@@ -209,38 +152,16 @@ export function GlassmorphismPortfolioBlock() {
                 </div>
 
                 <motion.div
-                  variants={listVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-80px" }}
-                  className="mt-8 flex flex-col gap-3"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="mt-8 ml-3 p-5 flex flex-1 flex-col items-center justify-center gap-6 border-t border-white/10 pt-8"
                 >
-                  {socialLinks.map((social) => {
-                    const Icon = social.icon
-                    return (
-                      <motion.a
-                        key={social.label}
-                        variants={itemVariants}
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex items-center justify-between rounded-2xl border border-white/15 bg-black/30 px-4 py-3 text-left transition-all hover:-translate-y-0.5 hover:border-white/30 hover:bg-black/45"
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.985 }}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white/85">
-                            <Icon className="h-4 w-4" />
-                          </span>
-                          <div>
-                            <p className="text-sm font-semibold text-white">{social.label}</p>
-                            <p className="text-xs text-white/65">{social.handle}</p>
-                          </div>
-                        </div>
-                        <ArrowUpRight className="h-4 w-4 text-white/45 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white/80" />
-                      </motion.a>
-                    )
-                  })}
+                  <FlipLink href="mailto:kartavyagore0@gmail.com">Email</FlipLink>
+                  <FlipLink href="https://github.com/kartavyagore">Github</FlipLink>
+                  <FlipLink href="https://x.com">Twitter</FlipLink>
+                  <FlipLink href="https://linkedin.com/in/kartavya-gore">Linkedin</FlipLink>
                 </motion.div>
               </div>
             </div>
