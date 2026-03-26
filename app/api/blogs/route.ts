@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createBlogInDb, getAllBlogsFromDb, updateBlogInDb, deleteBlogFromDb, getBlogBySlugFromDb } from "@/lib/blogs-db"
+import { createBlogInDb, getAllBlogsFromDb, updateBlogInDb, deleteBlogFromDb, getBlogBySlugFromDb, hasBlogWithTitleInDb } from "@/lib/blogs-db"
 import { getAuthenticatedUserId } from "@/lib/auth-middleware"
 
 function toSlug(input: string) {
@@ -104,7 +104,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "title and excerpt are required" }, { status: 400 })
     }
 
-    const initialSlug = await generateAvailableSlug(body.title.trim())
+    const normalizedTitle = body.title.trim()
+    const duplicateTitleExists = await hasBlogWithTitleInDb(normalizedTitle)
+    if (duplicateTitleExists) {
+      return NextResponse.json(
+        { error: "A blog with this title is already published." },
+        { status: 409 },
+      )
+    }
+
+    const initialSlug = await generateAvailableSlug(normalizedTitle)
     const content = (body.content || "")
       .split("\n")
       .map((line) => line.trim())
@@ -121,7 +130,7 @@ export async function POST(request: NextRequest) {
     const imageUrl = normalizeImageUrl(body.imageUrl)
 
     const blogInput = {
-      title: body.title.trim(),
+      title: normalizedTitle,
       excerpt: body.excerpt.trim(),
       imageUrl,
       content: content.length > 0 ? content : ["Add your detailed blog content here."],
@@ -145,7 +154,7 @@ export async function POST(request: NextRequest) {
         if (!isDuplicateSlugError(error)) {
           throw error
         }
-        slug = `${toSlug(body.title.trim()) || "blog"}-${Date.now()}-${randomSuffix()}`
+        slug = `${toSlug(normalizedTitle) || "blog"}-${Date.now()}-${randomSuffix()}`
       }
     }
 

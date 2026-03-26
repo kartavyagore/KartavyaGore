@@ -210,6 +210,7 @@ export async function createBlogInDb(input: {
         input.publishedAt || null,
       ],
     )
+    return
   } catch (error) {
     const missingImage = isMissingImageUrlColumnError(error)
     const missingCover = isMissingCoverImageUrlColumnError(error)
@@ -299,6 +300,7 @@ export async function updateBlogInDb(
         slug,
       ],
     )
+    return
   } catch (error) {
     const missingImage = isMissingImageUrlColumnError(error)
     const missingCover = isMissingCoverImageUrlColumnError(error)
@@ -362,4 +364,16 @@ export async function updateBlogInDb(
 export async function deleteBlogFromDb(slug: string) {
   const pool = getDbPool()
   await pool.query("DELETE FROM blogs WHERE slug = ?", [slug])
+}
+
+export async function hasBlogWithTitleInDb(title: string): Promise<boolean> {
+  const pool = getDbPool()
+  const normalizedTitle = title.trim()
+  if (!normalizedTitle) return false
+
+  const [rows] = await pool.query<Array<RowDataPacket & { count: number }>>(
+    "SELECT COUNT(*) AS count FROM blogs WHERE LOWER(TRIM(title)) = LOWER(TRIM(?)) LIMIT 1",
+    [normalizedTitle],
+  )
+  return (rows[0]?.count || 0) > 0
 }
