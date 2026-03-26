@@ -56,7 +56,7 @@ export function GlassmorphismPortfolioBlock() {
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="text-2xl font-semibold tracking-tight text-white md:text-3xl"
                 >
-                  Kartavya Datta Gore, Software Engineer
+                  Kartavya Datta Gore, <br />Software Engineer
                 </motion.h2>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
