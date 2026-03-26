@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { createBlogInDb, getAllBlogsFromDb, updateBlogInDb, deleteBlogFromDb } from "@/lib/blogs-db"
+import { getAuthenticatedUserId } from "@/lib/auth-middleware"
 
 function toSlug(input: string) {
   return input
@@ -15,6 +16,17 @@ function verifyAdmin(password?: string): boolean {
   return !!adminSecret && password === adminSecret
 }
 
+function isAuthenticated(request: NextRequest, adminPassword?: string): boolean {
+  // Check JWT token first
+  const userId = getAuthenticatedUserId(request)
+  if (userId) {
+    return true
+  }
+
+  // Fall back to password verification
+  return verifyAdmin(adminPassword)
+}
+
 export async function GET() {
   try {
     const blogs = await getAllBlogsFromDb()
@@ -24,7 +36,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as {
       title: string
@@ -35,8 +47,8 @@ export async function POST(request: Request) {
       adminPassword?: string
     }
 
-    // Verify admin authentication
-    if (!verifyAdmin(body.adminPassword)) {
+    // Verify authentication (JWT or password)
+    if (!isAuthenticated(request, body.adminPassword)) {
       return NextResponse.json({ error: "Unauthorized: Invalid admin password" }, { status: 401 })
     }
 
@@ -74,7 +86,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
   try {
     const body = (await request.json()) as {
       slug: string
@@ -86,8 +98,8 @@ export async function PUT(request: Request) {
       adminPassword?: string
     }
 
-    // Verify admin authentication
-    if (!verifyAdmin(body.adminPassword)) {
+    // Verify authentication (JWT or password)
+    if (!isAuthenticated(request, body.adminPassword)) {
       return NextResponse.json({ error: "Unauthorized: Invalid admin password" }, { status: 401 })
     }
 
@@ -118,14 +130,14 @@ export async function PUT(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const slug = searchParams.get("slug")
     const adminPassword = searchParams.get("adminPassword")
 
-    // Verify admin authentication
-    if (!verifyAdmin(adminPassword || undefined)) {
+    // Verify authentication (JWT or password)
+    if (!isAuthenticated(request, adminPassword || undefined)) {
       return NextResponse.json({ error: "Unauthorized: Invalid admin password" }, { status: 401 })
     }
 

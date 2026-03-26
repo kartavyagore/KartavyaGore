@@ -1,6 +1,6 @@
 # Portfolio Website
 
-A modern full-stack portfolio website built with Next.js 16, featuring a blog system, project showcase, and admin authentication.
+A modern full-stack portfolio website built with Next.js 16, featuring a blog system, project showcase, and **WebAuthn passkey authentication** (fingerprint/Face ID login).
 
 ## 🚀 Tech Stack
 
@@ -9,6 +9,7 @@ A modern full-stack portfolio website built with Next.js 16, featuring a blog sy
 - **Styling:** Tailwind CSS v4
 - **Animations:** Framer Motion
 - **Database:** MySQL (TiDB Cloud)
+- **Authentication:** WebAuthn (Passkeys) + JWT
 - **Deployment:** Vercel (recommended)
 
 ## 📋 Features
@@ -16,10 +17,32 @@ A modern full-stack portfolio website built with Next.js 16, featuring a blog sy
 - ✅ Responsive portfolio homepage
 - ✅ Dynamic project showcase
 - ✅ Full-featured blog system with CRUD operations
-- ✅ Admin authentication for blog management
+- ✅ **🔐 WebAuthn passkey authentication** (fingerprint, Face ID, Windows Hello)
+- ✅ **Multi-device support** (register laptop, phone, security key)
+- ✅ **Password fallback** for compatibility
 - ✅ Form validation with toast notifications
 - ✅ SEO optimized with metadata and sitemap
 - ✅ Dark mode design with glassmorphism effects
+
+## 🔐 Authentication Features (NEW!)
+
+This portfolio now includes modern **WebAuthn passkey authentication**:
+
+- 🚀 **One-touch login** - Use fingerprint or Face ID instead of passwords
+- 📱 **Multi-device** - Register multiple devices (laptop + phone + security key)
+- 🔒 **More secure** - Private keys never leave your device
+- ⚡ **Faster** - No need to type passwords
+- 🎯 **Password fallback** - Traditional password still works
+
+### How to Login with Passkey
+
+1. Navigate to `/blogs`
+2. Click "Add a blog"
+3. Click "Login with Passkey"
+4. Touch your fingerprint or use Face ID
+5. ✅ Logged in instantly!
+
+**See [WEBAUTHN_SETUP.md](WEBAUTHN_SETUP.md) for detailed setup instructions.**
 
 ## 🛠️ Setup Instructions
 
@@ -36,16 +59,57 @@ cd portfolio
 npm install
 ```
 
+**For WebAuthn passkey authentication, also install:**
+```bash
+npm install @simplewebauthn/server @simplewebauthn/browser jsonwebtoken @types/jsonwebtoken
+```
+
+Or use the automated setup script:
+```bash
+# On Windows:
+.\setup-webauthn.ps1
+
+# On Linux/Mac:
+chmod +x setup-webauthn.sh
+./setup-webauthn.sh
+```
+
 ### 3. Configure environment variables
 
 Create a `.env.local` file in the root directory:
 
 ```env
+# Database (Required)
 DATABASE_URL=mysql://user:password@host:port/database
+
+# Password Authentication (Fallback)
 BLOG_ADMIN_SECRET=your-secure-password-here
+
+# WebAuthn Passkey Authentication (Required for passkey login)
+JWT_SECRET=your-very-secure-random-jwt-secret-at-least-32-characters-long
+RP_ID=localhost
+RP_NAME=Portfolio Admin
+NEXT_PUBLIC_ORIGIN=http://localhost:3000
 ```
 
-### 4. Run development server
+**Generate a secure JWT_SECRET:**
+```bash
+# On Linux/Mac:
+openssl rand -base64 32
+
+# On Windows PowerShell:
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
+```
+
+### 4. Initialize database
+
+Run the database schema to create tables (including passkey tables):
+
+```bash
+mysql -u your_user -p your_database < lib/db-init.sql
+```
+
+### 5. Run development server
 
 ```bash
 npm run dev

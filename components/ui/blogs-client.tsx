@@ -1,11 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import type { BlogPost } from "@/lib/blogs"
 import { ToastContainer } from "./toast"
+import PasskeyLogin from "./passkey-login"
+import PasskeyManager from "./passkey-manager"
 
 type BlogsClientProps = {
   initialPosts: BlogPost[]
@@ -26,38 +28,50 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [adminPassword, setAdminPassword] = useState("")
+  const [showPasswordFallback, setShowPasswordFallback] = useState(false)
+  const [showPasskeyManager, setShowPasskeyManager] = useState(false)
+  const toastCounterRef = useRef(0)
 
   useEffect(() => {
-    // Check if admin password is stored in localStorage and verify it
-    const storedPassword = localStorage.getItem("blogAdminPassword")
-    if (storedPassword) {
-      // Verify the stored password is still valid
-      fetch(`/api/blogs?slug=__verify__&adminPassword=${encodeURIComponent(storedPassword)}`, {
-        method: "DELETE",
+    // Check if user is authenticated via JWT cookie
+    fetch("/api/auth/verify", { credentials: "include" })
+      .then((response) => {
+        if (response.ok) {
+          setIsAuthenticated(true)
+          return
+        }
+        // Fall back to checking localStorage password
+        const storedPassword = localStorage.getItem("blogAdminPassword")
+        if (storedPassword) {
+          // Re-authenticate using password fallback and refresh auth cookie
+          return fetch("/api/auth/password-login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ adminPassword: storedPassword }),
+          }).then((response) => {
+            if (response.status === 401) {
+              localStorage.removeItem("blogAdminPassword")
+              setAdminPassword("")
+              setIsAuthenticated(false)
+            } else {
+              setAdminPassword(storedPassword)
+              setIsAuthenticated(true)
+            }
+          })
+        }
       })
-        .then((response) => {
-          if (response.status === 401) {
-            // Password is invalid, clear it
-            localStorage.removeItem("blogAdminPassword")
-            setAdminPassword("")
-            setIsAuthenticated(false)
-          } else {
-            // Password is valid
-            setAdminPassword(storedPassword)
-            setIsAuthenticated(true)
-          }
-        })
-        .catch(() => {
-          // On error, clear authentication
-          localStorage.removeItem("blogAdminPassword")
-          setAdminPassword("")
-          setIsAuthenticated(false)
-        })
-    }
+      .catch(() => {
+        // On error, clear authentication
+        localStorage.removeItem("blogAdminPassword")
+        setAdminPassword("")
+        setIsAuthenticated(false)
+      })
   }, [])
 
   const showToast = (message: string, type: "success" | "error" | "warning" = "error") => {
-    const id = Date.now()
+    toastCounterRef.current += 1
+    const id = toastCounterRef.current
     setToasts((prev) => [...prev, { id, message, type }])
   }
 
@@ -71,12 +85,12 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
       return
     }
 
-    // Verify password with server using a lightweight API call
     try {
-      // Make a simple HEAD request equivalent - we'll try to delete a non-existent blog
-      // This will verify the password without actually affecting data
-      const response = await fetch(`/api/blogs?slug=__verify__&adminPassword=${encodeURIComponent(adminPassword)}`, {
-        method: "DELETE",
+      const response = await fetch("/api/auth/password-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ adminPassword }),
       })
 
       // Check authentication response
@@ -91,8 +105,6 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
         return
       }
 
-      // If we get here, authentication passed (even if blog doesn't exist, auth was valid)
-      // The API will return 200 (success) or 500 (blog not found), both mean auth was OK
       localStorage.setItem("blogAdminPassword", adminPassword)
       setIsAuthenticated(true)
       setShowAuthModal(false)
@@ -104,13 +116,37 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Call logout API to clear JWT cookie
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      })
+    } catch (error) {
+      console.error("Logout error:", error)
+    }
+
+    // Clear localStorage password as well
     localStorage.removeItem("blogAdminPassword")
     setAdminPassword("")
     setIsAuthenticated(false)
     setShowForm(false)
     setEditingSlug(null)
+    setShowPasskeyManager(false)
     showToast("Logged out successfully", "success")
+  }
+
+  const handlePasskeyLoginSuccess = () => {
+    setIsAuthenticated(true)
+    setShowAuthModal(false)
+    setShowPasswordFallback(false)
+    setShowForm(true)
+    showToast("Logged in with passkey!", "success")
+  }
+
+  const handlePasswordFallback = () => {
+    setShowPasswordFallback(true)
   }
 
   const handleAddBlogClick = () => {
@@ -160,7 +196,11 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     }
 
     try {
-      const response = await fetch(`/api/blogs?slug=${encodeURIComponent(slug)}&adminPassword=${encodeURIComponent(adminPassword)}`, {
+      const params = new URLSearchParams({ slug })
+      if (adminPassword) {
+        params.set("adminPassword", adminPassword)
+      }
+      const response = await fetch(`/api/blogs?${params.toString()}`, {
         method: "DELETE",
       })
 
@@ -216,7 +256,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     setIsSubmitting(true)
 
     const method = editingSlug ? "PUT" : "POST"
-    const body = editingSlug
+    const baseBody = editingSlug
       ? {
           slug: editingSlug,
           title: title.trim(),
@@ -224,7 +264,6 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
           content,
           tags,
           readTime,
-          adminPassword,
         }
       : {
           title: title.trim(),
@@ -232,8 +271,11 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
           content,
           tags,
           readTime,
-          adminPassword,
         }
+
+    const body = adminPassword
+      ? { ...baseBody, adminPassword }
+      : baseBody
 
     const response = await fetch("/api/blogs", {
       method,
@@ -299,13 +341,22 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
           <h2 className="text-lg font-semibold text-white">{editingSlug ? "Edit Blog" : "Write Blogs"}</h2>
           <div className="flex gap-2">
             {isAuthenticated && (
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-300 transition-colors hover:bg-red-500/20"
-              >
-                Logout
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowPasskeyManager(!showPasskeyManager)}
+                  className="rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-300 transition-colors hover:bg-blue-500/20"
+                >
+                  {showPasskeyManager ? "Hide Passkeys" : "Manage Passkeys"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-300 transition-colors hover:bg-red-500/20"
+                >
+                  Logout
+                </button>
+              </>
             )}
             {!showForm ? (
               <button
@@ -326,6 +377,13 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
             )}
           </div>
         </div>
+
+        {/* Passkey Manager */}
+        {showPasskeyManager && (
+          <div className="mt-6 p-6 rounded-xl border border-blue-500/20 bg-blue-500/5">
+            <PasskeyManager isAuthenticated={isAuthenticated} showToast={showToast} />
+          </div>
+        )}
 
         {showForm && (
           <form onSubmit={handleSubmit} className="mt-5 grid gap-4">
@@ -463,6 +521,11 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => {
+              setShowAuthModal(false)
+              setAdminPassword("")
+              setShowPasswordFallback(false)
+            }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -470,39 +533,66 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className="w-full max-w-md rounded-2xl border border-white/15 bg-black/90 p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-semibold text-white">Admin Authentication</h3>
-              <p className="mt-2 text-sm text-white/60">Enter your admin password to manage blogs</p>
+              <p className="mt-2 text-sm text-white/60">
+                {showPasswordFallback
+                  ? "Enter your admin password"
+                  : "Use your passkey or password to manage blogs"}
+              </p>
+
               <div className="mt-5">
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                  placeholder="Enter admin password"
-                  autoFocus
-                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
-                />
+                {!showPasswordFallback ? (
+                  <PasskeyLogin
+                    onSuccess={handlePasskeyLoginSuccess}
+                    onFallbackToPassword={handlePasswordFallback}
+                    showToast={showToast}
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="password"
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                      placeholder="Enter admin password"
+                      autoFocus
+                      className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                    />
+                    <div className="mt-4 flex gap-3">
+                      <button
+                        type="button"
+                        onClick={handleLogin}
+                        className="flex-1 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20"
+                      >
+                        Login
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordFallback(false)}
+                        className="rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
+                      >
+                        Back
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="mt-5 flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleLogin}
-                  className="flex-1 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20"
-                >
-                  Login
-                </button>
+
+              {!showPasswordFallback && (
                 <button
                   type="button"
                   onClick={() => {
                     setShowAuthModal(false)
                     setAdminPassword("")
+                    setShowPasswordFallback(false)
                   }}
-                  className="flex-1 rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
+                  className="mt-4 w-full rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
                 >
                   Cancel
                 </button>
-              </div>
+              )}
             </motion.div>
           </motion.div>
         )}
