@@ -82,8 +82,7 @@ export default function PasskeyLogin({
         throw new Error(error.error || "Authentication verification failed")
       }
 
-      // Success!
-      showToast?.("Logged in successfully with passkey!", "success")
+      // Success - parent handles success toast
       onSuccess()
     } catch (error: any) {
       console.error("Passkey authentication error:", error)
