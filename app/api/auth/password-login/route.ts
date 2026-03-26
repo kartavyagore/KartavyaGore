@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { generateToken } from "@/lib/auth-tokens"
 import { setAuthCookie } from "@/lib/auth-middleware"
+import { authRateLimitConfig, enforceRateLimit } from "@/lib/rate-limit"
 
 function verifyAdmin(password?: string): boolean {
   const adminSecret = process.env.BLOG_ADMIN_SECRET
@@ -9,6 +10,11 @@ function verifyAdmin(password?: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(request, authRateLimitConfig().password)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = (await request.json()) as { adminPassword?: string }
 
     if (!verifyAdmin(body.adminPassword)) {

@@ -2,11 +2,17 @@ import { randomUUID } from "crypto"
 import { NextRequest, NextResponse } from "next/server"
 import { generateAuthenticationOptions } from "@simplewebauthn/server"
 import { getCredentialsByUserId, saveChallenge } from "@/lib/passkey-db"
+import { authRateLimitConfig, enforceRateLimit } from "@/lib/rate-limit"
 
 const RP_ID = process.env.RP_ID || "localhost"
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(request, authRateLimitConfig().passkeyChallenge)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = (await request.json().catch(() => ({}))) as { userId?: string }
     const userId = body.userId || "admin"
 

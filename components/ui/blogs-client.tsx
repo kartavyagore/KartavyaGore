@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import type { BlogPost } from "@/lib/blogs"
 import { ToastContainer } from "./toast"
 import PasskeyLogin from "./passkey-login"
 import PasskeyManager from "./passkey-manager"
+import { normalizeDisplayImageUrl, toRenderableImageSrc } from "@/lib/image-url"
 
 type BlogsClientProps = {
   initialPosts: BlogPost[]
@@ -15,22 +16,28 @@ type BlogsClientProps = {
 
 export function BlogsClient({ initialPosts }: BlogsClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [posts, setPosts] = useState<BlogPost[]>(initialPosts)
   const [showForm, setShowForm] = useState(false)
   const [editingSlug, setEditingSlug] = useState<string | null>(null)
   const [title, setTitle] = useState("")
   const [excerpt, setExcerpt] = useState("")
+  const [imageUrl, setImageUrl] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [tags, setTags] = useState("")
   const [content, setContent] = useState("")
   const [readTime, setReadTime] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: "success" | "error" | "warning" }>>([])
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [adminPassword, setAdminPassword] = useState("")
   const [showPasswordFallback, setShowPasswordFallback] = useState(false)
   const [showPasskeyManager, setShowPasskeyManager] = useState(false)
+  const [pendingEditSlug, setPendingEditSlug] = useState<string | null>(null)
   const toastCounterRef = useRef(0)
+  const processedEditQueryRef = useRef<string | null>(null)
 
   useEffect(() => {
     // Check if user is authenticated via JWT cookie
@@ -108,7 +115,9 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
       localStorage.setItem("blogAdminPassword", adminPassword)
       setIsAuthenticated(true)
       setShowAuthModal(false)
-      setShowForm(true) // Open the form after successful authentication
+      if (!pendingEditSlug) {
+        setShowForm(true) // Open the form after successful authentication
+      }
       showToast("Authenticated successfully!", "success")
     } catch (error) {
       showToast("Authentication failed. Please try again.", "error")
@@ -141,7 +150,9 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     setIsAuthenticated(true)
     setShowAuthModal(false)
     setShowPasswordFallback(false)
-    setShowForm(true)
+    if (!pendingEditSlug) {
+      setShowForm(true)
+    }
     showToast("Logged in with passkey!", "success")
   }
 
@@ -158,74 +169,76 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
   }
 
   useEffect(() => {
-    setPosts(initialPosts)
+    setPosts(
+      initialPosts.map((blog) => ({
+        ...blog,
+        imageUrl: normalizeDisplayImageUrl(blog.imageUrl),
+      })),
+    )
   }, [initialPosts])
 
-  const handleEdit = (post: BlogPost) => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true)
-      return
-    }
+  const startEditingPost = (post: BlogPost) => {
     setEditingSlug(post.slug)
     setTitle(post.title)
     setExcerpt(post.excerpt)
+    setImageUrl(post.imageUrl || "")
+    setImageFile(null)
     setTags(post.tags.join(", "))
     setContent(post.content.join("\n"))
     setReadTime(post.readTime)
     setShowForm(true)
   }
 
-  const handleCancelEdit = () => {
-    setEditingSlug(null)
-    setTitle("")
-    setExcerpt("")
-    setTags("")
-    setContent("")
-    setReadTime("")
-    setShowForm(false)
-  }
+  useEffect(() => {
+    const editSlug = searchParams.get("edit")
+    if (!editSlug) {
+      return
+    }
+    if (processedEditQueryRef.current === editSlug) {
+      return
+    }
 
-  const handleDelete = async (slug: string) => {
+    const post = posts.find((item) => item.slug === editSlug)
+    if (!post) {
+      return
+    }
+
+    processedEditQueryRef.current = editSlug
     if (!isAuthenticated) {
+      setPendingEditSlug(editSlug)
       setShowAuthModal(true)
       return
     }
 
-    if (!confirm("Are you sure you want to delete this blog post?")) {
+    startEditingPost(post)
+  }, [searchParams, posts, isAuthenticated])
+
+  useEffect(() => {
+    if (!isAuthenticated || !pendingEditSlug) {
       return
     }
 
-    try {
-      const params = new URLSearchParams({ slug })
-      if (adminPassword) {
-        params.set("adminPassword", adminPassword)
-      }
-      const response = await fetch(`/api/blogs?${params.toString()}`, {
-        method: "DELETE",
-      })
-
-      if (!response.ok) {
-        const payload = (await response.json()) as { error?: string }
-        if (response.status === 401) {
-          showToast("Authentication failed. Please login again.", "error")
-          handleLogout()
-          return
-        }
-        showToast(payload.error || "Failed to delete blog", "error")
-        return
-      }
-
-      showToast("Blog deleted successfully!", "success")
-
-      // Refresh the list
-      const refreshed = await fetch("/api/blogs", { cache: "no-store" })
-      if (refreshed.ok) {
-        const payload = (await refreshed.json()) as { blogs: BlogPost[] }
-        setPosts(payload.blogs)
-      }
-    } catch (error) {
-      showToast("Failed to delete blog", "error")
+    const post = posts.find((item) => item.slug === pendingEditSlug)
+    if (!post) {
+      showToast("Blog not found for editing.", "error")
+      setPendingEditSlug(null)
+      return
     }
+
+    startEditingPost(post)
+    setPendingEditSlug(null)
+  }, [isAuthenticated, pendingEditSlug, posts])
+
+  const handleCancelEdit = () => {
+    setEditingSlug(null)
+    setTitle("")
+    setExcerpt("")
+    setImageUrl("")
+    setImageFile(null)
+    setTags("")
+    setContent("")
+    setReadTime("")
+    setShowForm(false)
   }
 
   const validateForm = (): boolean => {
@@ -245,8 +258,70 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     return true
   }
 
+  const uploadImageAndReturnUrl = async (): Promise<string | null> => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true)
+      return null
+    }
+
+    if (!imageFile) {
+      return imageUrl.trim() || null
+    }
+
+    setIsUploadingImage(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", imageFile)
+      if (adminPassword.trim()) {
+        formData.append("adminPassword", adminPassword.trim())
+      }
+
+      const response = await fetch("/api/uploads/blog-image", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      })
+
+      const payload = (await response.json()) as { error?: string; url?: string }
+      if (!response.ok || !payload.url) {
+        if (response.status === 401) {
+          showToast("Authentication failed. Please login again.", "error")
+          handleLogout()
+          return null
+        }
+        showToast(payload.error || "Failed to upload image", "error")
+        return null
+      }
+
+      setImageUrl(payload.url)
+      setImageFile(null)
+      showToast("Image uploaded successfully!", "success")
+      return payload.url
+    } catch {
+      showToast("Failed to upload image", "error")
+      return null
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
+  const handleImageUpload = async () => {
+    if (!imageFile) {
+      showToast("Please select an image file first.", "warning")
+      return
+    }
+
+    await uploadImageAndReturnUrl()
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (isUploadingImage) {
+      showToast("Please wait for the image upload to finish.", "warning")
+      return
+    }
 
     // Validate form
     if (!validateForm()) {
@@ -255,12 +330,19 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
 
     setIsSubmitting(true)
 
+    const resolvedImageUrl = imageFile ? await uploadImageAndReturnUrl() : (imageUrl.trim() || null)
+    if (imageFile && !resolvedImageUrl) {
+      setIsSubmitting(false)
+      return
+    }
+
     const method = editingSlug ? "PUT" : "POST"
     const baseBody = editingSlug
       ? {
           slug: editingSlug,
           title: title.trim(),
           excerpt: excerpt.trim(),
+          imageUrl: resolvedImageUrl || undefined,
           content,
           tags,
           readTime,
@@ -268,6 +350,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
       : {
           title: title.trim(),
           excerpt: excerpt.trim(),
+          imageUrl: resolvedImageUrl || undefined,
           content,
           tags,
           readTime,
@@ -301,11 +384,18 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     const refreshed = await fetch("/api/blogs", { cache: "no-store" })
     if (refreshed.ok) {
       const payload = (await refreshed.json()) as { blogs: BlogPost[] }
-      setPosts(payload.blogs)
+      setPosts(
+        payload.blogs.map((blog) => ({
+          ...blog,
+          imageUrl: normalizeDisplayImageUrl(blog.imageUrl),
+        })),
+      )
     }
 
     setTitle("")
     setExcerpt("")
+    setImageUrl("")
+    setImageFile(null)
     setTags("")
     setContent("")
     setReadTime("")
@@ -412,6 +502,36 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
             </div>
             <div>
               <label className="mb-1 block text-xs text-white/60">
+                Blog image URL <span className="text-white/40">(optional)</span>
+              </label>
+              <input
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/blog-cover.jpg"
+                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+              />
+              <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white file:mr-3 file:rounded-md file:border-0 file:bg-white/10 file:px-3 file:py-1 file:text-xs file:font-semibold file:uppercase file:tracking-[0.08em] file:text-white hover:file:bg-white/20"
+                />
+                <button
+                  type="button"
+                  onClick={handleImageUpload}
+                  disabled={!imageFile || isUploadingImage}
+                  className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isUploadingImage ? "Uploading..." : "Upload Image"}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-white/45">
+                Upload to Supabase Storage or paste a direct image URL.
+              </p>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-white/60">
                 Full content <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -447,69 +567,62 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               </div>
             </div>
             <button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-2 w-full rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed md:w-fit"
-            >
-              {isSubmitting ? (editingSlug ? "Updating..." : "Publishing...") : editingSlug ? "Update Blog" : "Publish Blog"}
-            </button>
+                type="submit"
+               disabled={isSubmitting || isUploadingImage}
+               className="mt-2 w-full rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed md:w-fit"
+             >
+               {isUploadingImage
+                 ? "Uploading image..."
+                 : isSubmitting
+                   ? (editingSlug ? "Updating..." : "Publishing...")
+                   : editingSlug
+                     ? "Update Blog"
+                     : "Publish Blog"}
+             </button>
           </form>
         )}
       </section>
 
       <section className="mx-auto mt-12 grid max-w-6xl gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {posts.map((post, index) => (
-          <motion.article
-            key={post.slug}
-            initial={{ opacity: 0, y: 48, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.55, delay: index * 0.07 }}
-            whileHover={{ y: -5 }}
-            className="group relative rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
-          >
-            {isAuthenticated && (
-              <div className="absolute right-3 top-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    handleEdit(post)
-                  }}
-                  className="rounded-lg border border-white/20 bg-black/40 px-2 py-1 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-                  title="Edit blog"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    handleDelete(post.slug)
-                  }}
-                  className="rounded-lg border border-red-500/30 bg-red-500/10 px-2 py-1 text-xs text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200"
-                  title="Delete blog"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-            <Link href={`/blogs/${post.slug}`} className="block">
-              <p className="text-xs uppercase tracking-[0.18em] text-white/55">
-                {post.publishedAt} · {post.readTime}
-              </p>
-              <h2 className="mt-3 text-xl font-semibold leading-snug text-white">{post.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-white/75">{post.excerpt}</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
-                  <span key={tag} className="rounded-full border border-white/20 bg-white/[0.06] px-3 py-1 text-xs text-white/80">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </Link>
-          </motion.article>
-        ))}
+        {posts.map((post, index) => {
+          const imageSrc = toRenderableImageSrc(post.imageUrl)
+
+          return (
+            <motion.article
+              key={post.slug}
+              initial={{ opacity: 0, y: 48, scale: 0.98 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.55, delay: index * 0.07 }}
+              whileHover={{ y: -5 }}
+              className="group rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+            >
+              <Link href={`/blogs/${post.slug}`} className="block">
+                {imageSrc ? (
+                  <div className="mb-4 overflow-hidden rounded-xl border border-white/10">
+                    <img
+                      src={imageSrc}
+                      alt={post.title}
+                      className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
+                  </div>
+                ) : null}
+                <p className="text-xs uppercase tracking-[0.18em] text-white/55">
+                  {post.publishedAt} · {post.readTime}
+                </p>
+                <h2 className="mt-3 text-xl font-semibold leading-snug text-white">{post.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-white/75">{post.excerpt}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-white/20 bg-white/[0.06] px-3 py-1 text-xs text-white/80">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </Link>
+            </motion.article>
+          )
+        })}
       </section>
 
       {/* Authentication Modal */}

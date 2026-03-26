@@ -90,6 +90,7 @@ JWT_SECRET=your-very-secure-random-jwt-secret-at-least-32-characters-long
 RP_ID=localhost
 RP_NAME=Portfolio Admin
 NEXT_PUBLIC_ORIGIN=http://localhost:3000
+
 ```
 
 **Generate a secure JWT_SECRET:**
@@ -129,6 +130,50 @@ Visit [http://localhost:3000](http://localhost:3000)
 ### Environment Variables Required:
 - `DATABASE_URL` - Your MySQL database connection string
 - `BLOG_ADMIN_SECRET` - Password for blog admin access
+- `JWT_SECRET` - JWT signing secret for auth cookies
+- `RP_ID`, `RP_NAME`, `NEXT_PUBLIC_ORIGIN` - WebAuthn/passkey config
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET` - Blog image upload storage
+
+### Login Rate Limiting
+
+Authentication endpoints are rate-limited server-side by client IP:
+- `POST /api/auth/password-login`
+- `POST /api/auth/login/challenge`
+- `POST /api/auth/login/verify`
+- `POST /api/uploads/blog-image`
+
+When limit is exceeded, API returns `429` with `Retry-After` header.
+
+Optional tuning env vars:
+```env
+AUTH_PASSWORD_RATE_LIMIT_MAX=5
+AUTH_PASSWORD_RATE_LIMIT_WINDOW_MS=300000
+AUTH_PASSKEY_CHALLENGE_RATE_LIMIT_MAX=10
+AUTH_PASSKEY_CHALLENGE_RATE_LIMIT_WINDOW_MS=300000
+AUTH_PASSKEY_VERIFY_RATE_LIMIT_MAX=10
+AUTH_PASSKEY_VERIFY_RATE_LIMIT_WINDOW_MS=300000
+IMAGE_UPLOAD_RATE_LIMIT_MAX=10
+IMAGE_UPLOAD_RATE_LIMIT_WINDOW_MS=300000
+```
+
+### Supabase Blog Image Upload Setup
+
+This project supports direct image upload from the blog form to Supabase Storage.
+
+1. Create a storage bucket in Supabase (recommended name: `blog-images`)
+2. Mark the bucket as public (or provide your own signed URL flow)
+3. Add these environment variables:
+
+```env
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET=blog-images
+```
+
+Then in `/blogs` admin form:
+- Select an image file
+- Click `Upload Image`
+- The returned public URL is auto-filled and saved as `image_url` in the database
 
 ### Update URLs in Production:
 After deployment, update these files with your domain:
@@ -192,4 +237,3 @@ This project is open source and available under the MIT License.
 ---
 
 Built with ❤️ using Next.js
-

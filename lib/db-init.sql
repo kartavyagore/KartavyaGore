@@ -25,3 +25,7 @@ CREATE TABLE IF NOT EXISTS webauthn_challenges (
   expires_at TIMESTAMP NOT NULL,
   INDEX idx_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Optional blog cover image support (safe no-op if already present)
+ALTER TABLE blogs
+  ADD COLUMN IF NOT EXISTS image_url TEXT NULL;

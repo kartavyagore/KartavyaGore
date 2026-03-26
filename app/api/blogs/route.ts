@@ -1,14 +1,61 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createBlogInDb, getAllBlogsFromDb, updateBlogInDb, deleteBlogFromDb } from "@/lib/blogs-db"
+import { createBlogInDb, getAllBlogsFromDb, updateBlogInDb, deleteBlogFromDb, getBlogBySlugFromDb } from "@/lib/blogs-db"
 import { getAuthenticatedUserId } from "@/lib/auth-middleware"
 
 function toSlug(input: string) {
   return input
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "-")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
+function randomSuffix() {
+  return Math.random().toString(36).slice(2, 8)
+}
+
+function isDuplicateSlugError(error: unknown): boolean {
+  const err = error as { code?: string; message?: string }
+  if (err?.code === "ER_DUP_ENTRY" && err?.message?.includes("uk_blogs_slug")) {
+    return true
+  }
+  return Boolean(err?.message?.toLowerCase().includes("duplicate entry") && err.message?.includes("uk_blogs_slug"))
+}
+
+async function generateAvailableSlug(title: string): Promise<string> {
+  const baseSlug = toSlug(title) || "blog"
+  const existing = await getBlogBySlugFromDb(baseSlug)
+  if (!existing) {
+    return baseSlug
+  }
+
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const candidate = `${baseSlug}-${randomSuffix()}`
+    const taken = await getBlogBySlugFromDb(candidate)
+    if (!taken) {
+      return candidate
+    }
+  }
+
+  return `${baseSlug}-${Date.now()}-${randomSuffix()}`
+}
+
+function normalizeImageUrl(input?: string): string | null {
+  if (!input?.trim()) return null
+  const value = input.trim()
+  try {
+    const parsed = new URL(value)
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error("Invalid image URL protocol")
+    }
+    return parsed.toString()
+  } catch {
+    throw new Error("imageUrl must be a valid http/https URL")
+  }
 }
 
 function verifyAdmin(password?: string): boolean {
@@ -41,6 +88,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as {
       title: string
       excerpt: string
+      imageUrl?: string
       content?: string
       tags?: string
       readTime?: string
@@ -56,7 +104,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "title and excerpt are required" }, { status: 400 })
     }
 
-    const slug = toSlug(body.title) || `blog-${Date.now()}`
+    const initialSlug = await generateAvailableSlug(body.title.trim())
     const content = (body.content || "")
       .split("\n")
       .map((line) => line.trim())
@@ -70,15 +118,40 @@ export async function POST(request: NextRequest) {
     const now = new Date()
     const publishedAt = now.toISOString().slice(0, 19).replace("T", " ")
 
-    await createBlogInDb({
-      slug,
+    const imageUrl = normalizeImageUrl(body.imageUrl)
+
+    const blogInput = {
       title: body.title.trim(),
       excerpt: body.excerpt.trim(),
+      imageUrl,
       content: content.length > 0 ? content : ["Add your detailed blog content here."],
       tags,
       readTime: body.readTime?.trim() || "5 min read",
       publishedAt,
-    })
+    }
+
+    let slug = initialSlug
+    let published = false
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        await createBlogInDb({
+          slug,
+          ...blogInput,
+        })
+        published = true
+        break
+      } catch (error) {
+        if (!isDuplicateSlugError(error)) {
+          throw error
+        }
+        slug = `${toSlug(body.title.trim()) || "blog"}-${Date.now()}-${randomSuffix()}`
+      }
+    }
+
+    if (!published) {
+      throw new Error("Failed to generate a unique blog slug. Please try publishing again.")
+    }
 
     return NextResponse.json({ ok: true, slug })
   } catch (error) {
@@ -92,6 +165,7 @@ export async function PUT(request: NextRequest) {
       slug: string
       title: string
       excerpt: string
+      imageUrl?: string
       content?: string
       tags?: string
       readTime?: string
@@ -116,9 +190,12 @@ export async function PUT(request: NextRequest) {
       .map((tag) => tag.trim())
       .filter(Boolean)
 
+    const imageUrl = normalizeImageUrl(body.imageUrl)
+
     await updateBlogInDb(body.slug, {
       title: body.title.trim(),
       excerpt: body.excerpt.trim(),
+      imageUrl,
       content: content.length > 0 ? content : ["Add your detailed blog content here."],
       tags,
       readTime: body.readTime?.trim() || "5 min read",

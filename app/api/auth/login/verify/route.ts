@@ -11,12 +11,18 @@ import {
 } from "@/lib/passkey-db"
 import { generateToken } from "@/lib/auth-tokens"
 import { setAuthCookie } from "@/lib/auth-middleware"
+import { authRateLimitConfig, enforceRateLimit } from "@/lib/rate-limit"
 
 const RP_ID = process.env.RP_ID || "localhost"
 const ORIGIN = process.env.NEXT_PUBLIC_ORIGIN || "http://localhost:3000"
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResponse = enforceRateLimit(request, authRateLimitConfig().passkeyVerify)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = (await request.json()) as {
       response: AuthenticationResponseJSON
       challengeId: string
