@@ -160,7 +160,7 @@ export function GlassmorphismPortfolioBlock() {
                 >
                   <FlipLink href="mailto:kartavyagore0@gmail.com">Email</FlipLink>
                   <FlipLink href="https://github.com/kartavyagore">Github</FlipLink>
-                  <FlipLink href="https://x.com">Twitter</FlipLink>
+                  <FlipLink href="https://x.com/Kartavyagore">Twitter</FlipLink>
                   <FlipLink href="https://linkedin.com/in/kartavya-gore">Linkedin</FlipLink>
                 </motion.div>
               </div>

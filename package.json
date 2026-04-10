@@ -13,6 +13,7 @@
     "@simplewebauthn/server": "^13.3.0",
     "@tailwindcss/typography": "^0.5.19",
     "@types/jsonwebtoken": "^9.0.10",
+    "cmdk": "^1.1.1",
     "framer-motion": "^12.38.0",
     "github-slugger": "^2.0.0",
     "jsonwebtoken": "^9.0.3",
