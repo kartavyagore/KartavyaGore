@@ -114,10 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     const initialSlug = await generateAvailableSlug(normalizedTitle)
-    const content = (body.content || "")
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
+    const content = body.content || "Add your detailed blog content here."
     const tags = (body.tags || "")
       .split(",")
       .map((tag) => tag.trim())
@@ -133,7 +130,7 @@ export async function POST(request: NextRequest) {
       title: normalizedTitle,
       excerpt: body.excerpt.trim(),
       imageUrl,
-      content: content.length > 0 ? content : ["Add your detailed blog content here."],
+      content,
       tags,
       readTime: body.readTime?.trim() || "5 min read",
       publishedAt,
@@ -190,10 +187,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "slug, title and excerpt are required" }, { status: 400 })
     }
 
-    const content = (body.content || "")
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
+    const content = body.content || "Add your detailed blog content here."
     const tags = (body.tags || "")
       .split(",")
       .map((tag) => tag.trim())
@@ -205,7 +199,7 @@ export async function PUT(request: NextRequest) {
       title: body.title.trim(),
       excerpt: body.excerpt.trim(),
       imageUrl,
-      content: content.length > 0 ? content : ["Add your detailed blog content here."],
+      content,
       tags,
       readTime: body.readTime?.trim() || "5 min read",
     })

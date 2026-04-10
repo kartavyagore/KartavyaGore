@@ -19,18 +19,16 @@ function parseTags(tags: string | null): string[] {
   }
 }
 
-function parseContent(content: string): string[] {
-  if (!content) return []
+function parseContent(content: string): string {
+  if (!content) return ""
   try {
     const parsed = JSON.parse(content)
-    if (Array.isArray(parsed)) return parsed.map((p) => String(p))
+    if (Array.isArray(parsed)) return parsed.map((p) => String(p)).join("\n\n")
+    if (typeof parsed === "string") return parsed
   } catch {
     return content
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
   }
-  return []
+  return content
 }
 
 function mapBlogRow(row: BlogRow): BlogPost {
@@ -189,7 +187,7 @@ export async function createBlogInDb(input: {
   title: string
   excerpt: string
   imageUrl?: string | null
-  content: string[]
+  content: string
   tags: string[]
   readTime: string
   publishedAt?: string
@@ -280,7 +278,7 @@ export async function updateBlogInDb(
     title: string
     excerpt: string
     imageUrl?: string | null
-    content: string[]
+    content: string
     tags: string[]
     readTime: string
   },

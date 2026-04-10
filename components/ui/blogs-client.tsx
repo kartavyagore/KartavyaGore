@@ -9,6 +9,7 @@ import { ToastContainer } from "./toast"
 import PasskeyLogin from "./passkey-login"
 import PasskeyManager from "./passkey-manager"
 import { normalizeDisplayImageUrl, toRenderableImageSrc } from "@/lib/image-url"
+import { PenLine } from "lucide-react"
 
 type BlogsClientProps = {
   initialPosts: BlogPost[]
@@ -25,12 +26,15 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
   const [imageUrl, setImageUrl] = useState("")
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [tags, setTags] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [content, setContent] = useState("")
   const [readTime, setReadTime] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: "success" | "error" | "warning" }>>([])
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authCheckComplete, setAuthCheckComplete] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [adminPassword, setAdminPassword] = useState("")
   const [showPasswordFallback, setShowPasswordFallback] = useState(false)
@@ -45,6 +49,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
       .then((response) => {
         if (response.ok) {
           setIsAuthenticated(true)
+          setAuthCheckComplete(true)
           return
         }
         // Fall back to checking localStorage password
@@ -65,7 +70,10 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               setAdminPassword(storedPassword)
               setIsAuthenticated(true)
             }
+            setAuthCheckComplete(true)
           })
+        } else {
+          setAuthCheckComplete(true)
         }
       })
       .catch(() => {
@@ -73,6 +81,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
         localStorage.removeItem("blogAdminPassword")
         setAdminPassword("")
         setIsAuthenticated(false)
+        setAuthCheckComplete(true)
       })
   }, [])
 
@@ -184,12 +193,14 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     setImageUrl(post.imageUrl || "")
     setImageFile(null)
     setTags(post.tags.join(", "))
-    setContent(post.content.join("\n"))
+    setContent(post.content)
     setReadTime(post.readTime)
     setShowForm(true)
   }
 
   useEffect(() => {
+    if (!authCheckComplete) return
+
     const editSlug = searchParams.get("edit")
     if (!editSlug) {
       return
@@ -211,7 +222,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     }
 
     startEditingPost(post)
-  }, [searchParams, posts, isAuthenticated])
+  }, [searchParams, posts, isAuthenticated, authCheckComplete])
 
   useEffect(() => {
     if (!isAuthenticated || !pendingEditSlug) {
@@ -404,18 +415,25 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     setIsSubmitting(false)
   }
 
+  const allTags = Array.from(new Set(posts.flatMap((post) => post.tags))).sort()
+
+  const filteredPosts = posts.filter((post) => {
+    if (selectedTag && !post.tags.includes(selectedTag)) return false
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      return (
+        post.title.toLowerCase().includes(q) ||
+        post.excerpt.toLowerCase().includes(q)
+      )
+    }
+    return true
+  })
+
   return (
     <>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       <section className="mx-auto max-w-6xl">
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="text-xs uppercase tracking-[0.28em] text-white/55"
-        >
-          Blogs
-        </motion.p>
+        
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -428,7 +446,13 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
 
       <section className="mx-auto mt-10 max-w-6xl rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-white">{editingSlug ? "Edit Blog" : "Write Blogs"}</h2>
+          <div className="flex flex-col">
+            <h2 className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+              <PenLine className="h-5 w-5 text-white/80" />
+              {editingSlug ? "Edit Insight" : "Publisher Studio"}
+            </h2>
+            <p className="mt-1 text-xs text-white/50">Draft, edit, and publish your latest thoughts to the live feed.</p>
+          </div>
           <div className="flex gap-2">
             {isAuthenticated && (
               <>
@@ -537,8 +561,8 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your blog content here (use new lines for paragraphs)"
-                rows={5}
+                placeholder="Write your blog content here in Markdown... (e.g., # Heading, **bold**)"
+                rows={10}
                 className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
               />
             </div>
@@ -583,8 +607,49 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
         )}
       </section>
 
-      <section className="mx-auto mt-12 grid max-w-6xl gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {posts.map((post, index) => {
+      <section className="mx-auto mt-10 max-w-3xl flex flex-col items-center gap-6">
+        <div className="w-full">
+          <input
+            type="text"
+            placeholder="Search blogs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-full border border-white/20 bg-white/5 px-6 py-3.5 text-base text-white outline-none transition-colors placeholder:text-white/40 focus:border-white/40 focus:bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.03)]"
+          />
+        </div>
+        {allTags.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedTag(null)}
+              className={`flex-none rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+                selectedTag === null
+                  ? "border-blue-500 bg-blue-500/20 text-blue-200"
+                  : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10"
+              }`}
+            >
+              All
+            </button>
+            {allTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setSelectedTag(tag)}
+                className={`flex-none rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+                  selectedTag === tag
+                    ? "border-blue-500 bg-blue-500/20 text-blue-200"
+                    : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10"
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="mx-auto mt-8 grid max-w-6xl gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {filteredPosts.map((post, index) => {
           const imageSrc = toRenderableImageSrc(post.imageUrl)
 
           return (

@@ -8,7 +8,7 @@ export type BlogPost = {
   publishedAt: string
   readTime: string
   tags: string[]
-  content: string[]
+  content: string
 }
 
 export interface BlogRow extends RowDataPacket {
