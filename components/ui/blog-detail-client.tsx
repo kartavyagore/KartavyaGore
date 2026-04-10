@@ -278,7 +278,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
         <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push("/blogs")}
             className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/20"
           >
             <ArrowLeft/>
