@@ -16,7 +16,7 @@ type Project = {
 
 const projects: Project[] = [
   {
-    title: "Event Management Platform",
+    title: "College Event Management Platform",
     tag: "Web Platform",
     summary:
       "A scalable full-stack platform Event management platform for colleges. implemented webAuthn, OAuth 2.0, OTP login along with Event CRUD API, ADMIN Dashboard",
