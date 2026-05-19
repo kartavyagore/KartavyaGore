@@ -15,6 +15,16 @@ type Project = {
 
 
 const projects: Project[] = [
+   {
+    title: "Netflix Event Driven Architecture Microservice Backend Clone",
+    tag: "Backend System",
+    summary:
+      "Built a scalable Netflix-like video streaming backend using an event-driven microservices architecture with Spring Boot, Apache Kafka, and AWS S3. The system asynchronously processes large video uploads (up to 2GB), automates encoding with FFmpeg, updates content dynamically, and enables secure high-performance streaming using Redis caching and S3 pre-signed URLs.",
+    stack: ["Java","Spring Boot", "Apache Kafka & Zookeeper", "Redis" ,"MySQL","FFMPEG", "Docker"],
+    status: "Complete",
+    liveUrl: "",
+    repoUrl: "https://github.com/kartavyagore/Netflix-Event-Driven-Architecture-Backend",
+  },
   {
     title: "College Event Management Platform",
     tag: "Web Platform",
