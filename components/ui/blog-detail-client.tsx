@@ -351,7 +351,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
               remarkPlugins={[remarkGfm]} 
               rehypePlugins={[rehypeSlug]}
               components={{
-                p: ({node, ...props}) => <p className="mb-6 leading-relaxed md:text-lg md:leading-8 last:mb-0 whitespace-pre-wrap" {...props} />,
+                p: ({node, ...props}) => <div className="mb-6 leading-relaxed md:text-lg md:leading-8 last:mb-0 whitespace-pre-wrap" {...props} />,
                 h1: ({node, ...props}) => <h1 className="text-3xl font-extrabold text-white mt-12 mb-6" {...props} />,
                 h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-white mt-10 mb-5" {...props} />,
                 h3: ({node, ...props}) => <h3 className="text-xl font-bold text-white mt-8 mb-4" {...props} />,
@@ -363,7 +363,10 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                 blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500 pl-4 py-1 mb-8 text-white/70 italic bg-white/[0.02] rounded-r-lg" {...props} />,
                 code: ({node, inline, className, children, ...props}: any) => {
                   const match = /language-(\w+)/.exec(className || '')
-                  return !inline ? (
+                  const hasNewlines = typeof children === 'string' && children.includes('\n')
+                  const isBlock = !inline || hasNewlines || match
+
+                  return isBlock ? (
                     <div className="relative mb-8 mt-4 rounded-xl overflow-hidden border border-white/10 bg-[#0d1117]">
                       <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10 text-xs text-white/50">
                         <span>{match?.[1] || 'code'}</span>

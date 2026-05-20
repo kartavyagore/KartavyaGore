@@ -10,6 +10,7 @@ import PasskeyLogin from "./passkey-login"
 import PasskeyManager from "./passkey-manager"
 import { normalizeDisplayImageUrl, toRenderableImageSrc } from "@/lib/image-url"
 import { PenLine } from "lucide-react"
+import { SlideButton } from "./slide-button"
 
 type BlogsClientProps = {
   initialPosts: BlogPost[]
@@ -326,17 +327,14 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     await uploadImageAndReturnUrl()
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
+  const submitBlog = async (): Promise<boolean> => {
     if (isUploadingImage) {
       showToast("Please wait for the image upload to finish.", "warning")
-      return
+      return false
     }
 
-    // Validate form
     if (!validateForm()) {
-      return
+      return false
     }
 
     setIsSubmitting(true)
@@ -344,7 +342,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     const resolvedImageUrl = imageFile ? await uploadImageAndReturnUrl() : (imageUrl.trim() || null)
     if (imageFile && !resolvedImageUrl) {
       setIsSubmitting(false)
-      return
+      return false
     }
 
     const method = editingSlug ? "PUT" : "POST"
@@ -383,11 +381,11 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
         showToast("Authentication failed. Please login again.", "error")
         handleLogout()
         setIsSubmitting(false)
-        return
+        return false
       }
       showToast(payload.error || `Failed to ${editingSlug ? "update" : "publish"} blog`, "error")
       setIsSubmitting(false)
-      return
+      return false
     }
 
     showToast(`Blog ${editingSlug ? "updated" : "published"} successfully!`, "success")
@@ -413,6 +411,12 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     setEditingSlug(null)
     setShowForm(false)
     setIsSubmitting(false)
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    await submitBlog()
   }
 
   const allTags = Array.from(new Set(posts.flatMap((post) => post.tags))).sort()
@@ -500,7 +504,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
         )}
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="mt-5 grid gap-4">
+          <form className="mt-5 grid gap-4">
             <div>
               <label className="mb-1 block text-xs text-white/60">
                 Blog title <span className="text-red-400">*</span>
@@ -590,20 +594,14 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                 />
               </div>
             </div>
-            <button
-                type="submit"
-               disabled={isSubmitting || isUploadingImage}
-               className="mt-2 w-full rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed md:w-fit"
-             >
-               {isUploadingImage
-                 ? "Uploading image..."
-                 : isSubmitting
-                   ? (editingSlug ? "Updating..." : "Publishing...")
-                   : editingSlug
-                     ? "Update Blog"
-                     : "Publish Blog"}
-             </button>
-          </form>
+             <div className="mt-2 flex justify-center">
+               <SlideButton
+                 label={editingSlug ? "Update Blog" : "Publish Blog"}
+                 disabled={isSubmitting || isUploadingImage}
+                 onSubmit={submitBlog}
+               />
+             </div>
+           </form>
         )}
       </section>
 
