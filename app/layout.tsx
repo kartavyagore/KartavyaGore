@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import MinimalDock from "@/components/ui/minimal-dock";
 import { CommandPalette } from "@/components/ui/command-palette";
+import MobileSwipeNav from "@/components/ui/mobile-swipe-nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,7 +42,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-black text-white pb-28">
-        {children}
+        <MobileSwipeNav>{children}</MobileSwipeNav>
         <MinimalDock />
         <CommandPalette />
       </body>
