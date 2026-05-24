@@ -6,8 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import type { BlogPost } from "@/lib/blogs"
 import { ToastContainer } from "./toast"
-import PasskeyLogin from "./passkey-login"
-import PasskeyManager from "./passkey-manager"
+import dynamic from "next/dynamic"
+
+const PasskeyLogin = dynamic(() => import("./passkey-login"), { ssr: false })
+const PasskeyManager = dynamic(() => import("./passkey-manager"), { ssr: false })
+
 import { normalizeDisplayImageUrl, toRenderableImageSrc } from "@/lib/image-url"
 import { PenLine } from "lucide-react"
 import { SlideButton } from "./slide-button"
@@ -187,15 +190,33 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     )
   }, [initialPosts])
 
-  const startEditingPost = (post: BlogPost) => {
+  const startEditingPost = async (post: BlogPost) => {
     setEditingSlug(post.slug)
     setTitle(post.title)
     setExcerpt(post.excerpt)
     setImageUrl(post.imageUrl || "")
     setImageFile(null)
     setTags(post.tags.join(", "))
-    setContent(post.content)
     setReadTime(post.readTime)
+
+    // Dynamically fetch full content on-demand if omitted/empty
+    if (!post.content) {
+      try {
+        const response = await fetch(`/api/blogs?slug=${post.slug}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data && data.blog) {
+            setContent(data.blog.content || "")
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load blog content dynamically", err)
+        setContent("")
+      }
+    } else {
+      setContent(post.content)
+    }
+
     setShowForm(true)
   }
 
@@ -414,11 +435,6 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     return true
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    await submitBlog()
-  }
-
   const allTags = Array.from(new Set(posts.flatMap((post) => post.tags))).sort()
 
   const filteredPosts = posts.filter((post) => {
@@ -437,7 +453,6 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
     <>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       <section className="mx-auto max-w-6xl">
-        
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -594,14 +609,14 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                 />
               </div>
             </div>
-             <div className="mt-2 flex justify-center">
-               <SlideButton
-                 label={editingSlug ? "Update Blog" : "Publish Blog"}
-                 disabled={isSubmitting || isUploadingImage}
-                 onSubmit={submitBlog}
-               />
-             </div>
-           </form>
+            <div className="mt-2 flex justify-center">
+              <SlideButton
+                label={editingSlug ? "Update Blog" : "Publish Blog"}
+                disabled={isSubmitting || isUploadingImage}
+                onSubmit={submitBlog}
+              />
+            </div>
+          </form>
         )}
       </section>
 
@@ -666,6 +681,8 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                     <img
                       src={imageSrc}
                       alt={post.title}
+                      loading="lazy"
+                      decoding="async"
                       className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                     />
                   </div>

@@ -127,7 +127,8 @@ const SlideButton = forwardRef<HTMLButtonElement, SlideButtonProps>(
       <motion.div
         animate={completed ? BUTTON_STATES.completed : BUTTON_STATES.initial}
         transition={ANIMATION_CONFIG.spring}
-        className="relative flex h-10 items-center justify-center rounded-full border border-white/20 bg-white/5"
+        className="relative flex h-10 items-center justify-center rounded-full border border-white/20 bg-white/5 no-swipe"
+        data-no-swipe="true"
       >
         {!completed && (
           <motion.div

@@ -24,7 +24,9 @@ import rehypeSlug from "rehype-slug"
 import GithubSlugger from "github-slugger"
 import { toRenderableImageSrc } from "@/lib/image-url"
 import { ToastContainer } from "./toast"
-import PasskeyLogin from "./passkey-login"
+import dynamic from "next/dynamic"
+
+const PasskeyLogin = dynamic(() => import("./passkey-login"), { ssr: false })
 
 type BlogDetailClientProps = {
   slug: string

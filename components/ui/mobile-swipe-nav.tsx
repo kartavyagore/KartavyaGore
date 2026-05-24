@@ -11,6 +11,7 @@ export default function MobileSwipeNav({ children }: { children: React.ReactNode
   const pathname = usePathname()
   const touchStartX = useRef(0)
   const touchStartY = useRef(0)
+  const isSwipePrevented = useRef(false)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -24,11 +25,26 @@ export default function MobileSwipeNav({ children }: { children: React.ReactNode
     if (!isMobile) return
 
     const handleTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement | null
+      if (
+        target?.closest(".no-swipe") ||
+        target?.closest('[data-no-swipe="true"]') ||
+        target?.closest("input") ||
+        target?.closest("textarea") ||
+        target?.closest("button") ||
+        target?.closest("select")
+      ) {
+        isSwipePrevented.current = true
+        return
+      }
+      isSwipePrevented.current = false
       touchStartX.current = e.touches[0].clientX
       touchStartY.current = e.touches[0].clientY
     }
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (isSwipePrevented.current) return
+
       const deltaX = e.changedTouches[0].clientX - touchStartX.current
       const deltaY = e.changedTouches[0].clientY - touchStartY.current
 

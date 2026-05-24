@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { Search } from "lucide-react"
 
 const COLOR = "#FFFFFF"
 const HIT_COLOR = "#333333"
@@ -415,12 +416,42 @@ export function PromptingIsAllYouNeed() {
     }
   }, [])
 
+  const handleOpenPalette = () => {
+    const event = new KeyboardEvent("keydown", {
+      key: "k",
+      ctrlKey: true,
+      bubbles: true,
+    })
+    document.dispatchEvent(event)
+  }
+
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed top-0 left-0 h-full w-full"
-      aria-label="Prompting Is All You Need: Fullscreen Pong game with pixel text"
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        className="fixed top-0 left-0 h-full w-full"
+        aria-label="Prompting Is All You Need: Fullscreen Pong game with pixel text"
+      />
+      <div 
+        onClick={handleOpenPalette}
+        className="fixed top-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-black/40 hover:bg-black/60 hover:border-white/20 backdrop-blur-md cursor-pointer select-none shadow-lg shadow-black/20 group active:scale-95 transition-all duration-300"
+      >
+        {/* Mobile View: Clean Touch Button */}
+        <span className="flex sm:hidden items-center gap-1.5 text-xs font-sans text-white/70 hover:text-white transition-colors py-0.5 px-1">
+          <Search className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+          <span>Open Command Menu</span>
+        </span>
+
+        {/* Desktop View: Keyboard Shortcut Pill */}
+        <span className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-white/40 group-hover:text-white/80 transition-colors">
+          <span className="group-hover:-translate-x-0.5 transition-transform duration-300">Press</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white/60 text-[10px] font-sans font-medium group-hover:bg-white/10 group-hover:text-white/80 transition-colors">⌘ K</kbd>
+          <span className="text-[9px] text-white/30">or</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white/60 text-[10px] font-sans font-medium group-hover:bg-white/10 group-hover:text-white/80 transition-colors">Ctrl K</kbd>
+          <span className="group-hover:translate-x-0.5 transition-transform duration-300">to navigate</span>
+        </span>
+      </div>
+    </>
   )
 }
 

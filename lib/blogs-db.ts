@@ -92,7 +92,7 @@ export async function getAllBlogsFromDb() {
   const pool = getDbPool()
   try {
     const [rows] = await pool.query<BlogRow[]>(
-      "SELECT slug, title, excerpt, COALESCE(NULLIF(image_url, ''), NULLIF(cover_image_url, '')) AS image_url, content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
+      "SELECT slug, title, excerpt, COALESCE(NULLIF(image_url, ''), NULLIF(cover_image_url, '')) AS image_url, '' AS content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
     )
     return rows.map(mapBlogRow)
   } catch (error) {
@@ -105,7 +105,7 @@ export async function getAllBlogsFromDb() {
 
   try {
     const [rows] = await pool.query<BlogRow[]>(
-      "SELECT slug, title, excerpt, NULLIF(image_url, '') AS image_url, content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
+      "SELECT slug, title, excerpt, NULLIF(image_url, '') AS image_url, '' AS content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
     )
     return rows.map(mapBlogRow)
   } catch (error) {
@@ -116,7 +116,7 @@ export async function getAllBlogsFromDb() {
 
   try {
     const [rows] = await pool.query<BlogRow[]>(
-      "SELECT slug, title, excerpt, NULLIF(cover_image_url, '') AS image_url, content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
+      "SELECT slug, title, excerpt, NULLIF(cover_image_url, '') AS image_url, '' AS content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
     )
     return rows.map(mapBlogRow)
   } catch (error) {
@@ -125,7 +125,7 @@ export async function getAllBlogsFromDb() {
     }
 
     const [legacyRows] = await pool.query<LegacyBlogRow[]>(
-      "SELECT slug, title, excerpt, content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
+      "SELECT slug, title, excerpt, '' AS content, published_at, read_time, tags FROM blogs ORDER BY COALESCE(published_at, created_at) DESC",
     )
     return legacyRows.map(mapLegacyBlogRow)
   }

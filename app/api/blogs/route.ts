@@ -74,8 +74,18 @@ function isAuthenticated(request: NextRequest, adminPassword?: string): boolean 
   return verifyAdmin(adminPassword)
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const slug = searchParams.get("slug")
+    if (slug) {
+      const blog = await getBlogBySlugFromDb(slug)
+      if (!blog) {
+        return NextResponse.json({ error: "Blog not found" }, { status: 404 })
+      }
+      return NextResponse.json({ blog })
+    }
+
     const blogs = await getAllBlogsFromDb()
     return NextResponse.json({ blogs })
   } catch (error) {

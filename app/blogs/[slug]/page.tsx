@@ -1,8 +1,7 @@
 import { getAllBlogsFromDb, getBlogBySlugFromDb } from "@/lib/blogs-db"
 import { BlogDetailClient } from "@/components/ui/blog-detail-client"
 
-export const dynamic = "force-dynamic"
-export const revalidate = 0
+export const revalidate = 60
 
 type BlogDetailPageProps = {
   params: Promise<{ slug: string }>
