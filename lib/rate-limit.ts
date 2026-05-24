@@ -28,6 +28,11 @@ export function authRateLimitConfig() {
       maxAttempts: toPositiveNumber(process.env.AUTH_PASSWORD_RATE_LIMIT_MAX, 5),
       windowMs: toPositiveNumber(process.env.AUTH_PASSWORD_RATE_LIMIT_WINDOW_MS, 5 * 60 * 1000),
     },
+    mfa: {
+      keyPrefix: "auth:mfa",
+      maxAttempts: toPositiveNumber(process.env.AUTH_PASSWORD_RATE_LIMIT_MAX, 5),
+      windowMs: toPositiveNumber(process.env.AUTH_PASSWORD_RATE_LIMIT_WINDOW_MS, 5 * 60 * 1000),
+    },
     passkeyChallenge: {
       keyPrefix: "auth:passkey:challenge",
       maxAttempts: toPositiveNumber(process.env.AUTH_PASSKEY_CHALLENGE_RATE_LIMIT_MAX, 10),

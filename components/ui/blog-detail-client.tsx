@@ -41,6 +41,9 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showPasswordFallback, setShowPasswordFallback] = useState(false)
   const [adminPassword, setAdminPassword] = useState("")
+  const [authMethod, setAuthMethod] = useState<"passkey" | "password" | "mfa">("passkey")
+  const [mfaCode, setMfaCode] = useState("")
+  const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
   const [showImagePreview, setShowImagePreview] = useState(false)
@@ -158,6 +161,51 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
       showToast("Authenticated successfully!", "success")
     } catch {
       showToast("Authentication failed", "error")
+    }
+  }
+
+  const handleMfaLogin = async (codeToVerify?: string) => {
+    const code = (codeToVerify || mfaCode).trim().replace(/\s+/g, "")
+    if (code.length !== 6) {
+      showToast("Please enter a 6-digit MFA code", "warning")
+      return
+    }
+
+    setIsVerifyingMfa(true)
+    try {
+      const response = await fetch("/api/auth/mfa-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ mfaCode: code }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        showToast(data.error || "MFA validation failed", "error")
+        setMfaCode("")
+        setIsVerifyingMfa(false)
+        return
+      }
+
+      setIsAuthenticated(true)
+      setShowAuthModal(false)
+      setMfaCode("")
+      setAuthMethod("passkey")
+      showToast("Authenticated successfully with Google Authenticator!", "success")
+    } catch {
+      showToast("MFA verification failed. Please try again.", "error")
+      setMfaCode("")
+    } finally {
+      setIsVerifyingMfa(false)
+    }
+  }
+
+  const handleMfaCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "")
+    setMfaCode(value)
+    if (value.length === 6) {
+      handleMfaLogin(value)
     }
   }
 
@@ -471,7 +519,9 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             onClick={() => {
               setShowAuthModal(false)
-              setShowPasswordFallback(false)
+              setAdminPassword("")
+              setMfaCode("")
+              setAuthMethod("passkey")
             }}
           >
             <motion.div
@@ -483,20 +533,50 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-semibold text-white">Admin Authentication</h3>
-              <p className="mt-2 text-sm text-white/60">
-                {showPasswordFallback
-                  ? "Enter your admin password"
-                  : "Use your passkey or password to manage this blog"}
+              <p className="mt-2 text-sm text-white/60 mb-5">
+                Manage this blog post securely using MFA, Passkeys, or standard password.
               </p>
 
-              <div className="mt-5">
-                {!showPasswordFallback ? (
+              {/* 3-Tab Selector */}
+              <div className="flex border-b border-white/10 mb-6">
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("passkey")}
+                  className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
+                    authMethod === "passkey" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  Passkey
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("password")}
+                  className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
+                    authMethod === "password" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  Password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMethod("mfa")}
+                  className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
+                    authMethod === "mfa" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                  }`}
+                >
+                  MFA Code
+                </button>
+              </div>
+
+              <div className="mt-4 min-h-[140px] flex flex-col justify-center">
+                {authMethod === "passkey" && (
                   <PasskeyLogin
                     onSuccess={handlePasskeySuccess}
-                    onFallbackToPassword={() => setShowPasswordFallback(true)}
                     showToast={showToast}
                   />
-                ) : (
+                )}
+
+                {authMethod === "password" && (
                   <>
                     <input
                       type="password"
@@ -505,7 +585,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                       onKeyDown={(e) => e.key === "Enter" && handlePasswordLogin()}
                       placeholder="Enter admin password"
                       autoFocus
-                      className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                      className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
                     />
                     <div className="mt-4 flex gap-3">
                       <button
@@ -515,17 +595,52 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                       >
                         Login
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowPasswordFallback(false)}
-                        className="rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
-                      >
-                        Back
-                      </button>
                     </div>
                   </>
                 )}
+
+                {authMethod === "mfa" && (
+                  <div className="grid gap-4">
+                    <p className="text-xs text-white/50 text-center leading-relaxed">
+                      Enter the 6-digit code generated by your Google Authenticator app.
+                    </p>
+                    <input
+                      type="text"
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      maxLength={6}
+                      disabled={isVerifyingMfa}
+                      value={mfaCode}
+                      onChange={handleMfaCodeChange}
+                      placeholder="000 000"
+                      autoFocus
+                      className="w-full text-center text-xl tracking-[0.25em] font-mono rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-white outline-none placeholder:text-white/25 focus:border-white/45 focus:border-blue-500/50"
+                    />
+                    {isVerifyingMfa && (
+                      <div className="flex items-center justify-center gap-2 py-2">
+                        <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="text-xs text-white/60 font-semibold tracking-wider">Verifying code automatically...</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAuthModal(false)
+                  setAdminPassword("")
+                  setMfaCode("")
+                  setAuthMethod("passkey")
+                }}
+                className="mt-6 w-full rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
+              >
+                Cancel
+              </button>
             </motion.div>
           </motion.div>
         )}
