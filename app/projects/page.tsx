@@ -2,70 +2,7 @@
 
 import { motion, useScroll, useSpring, useTransform } from "framer-motion"
 
-type Project = {
-  title: string
-  tag: string
-  summary: string
-  stack: string[]
-  status: string
-  liveUrl?: string
-  repoUrl: string
-}
-
-
-
-const projects: Project[] = [
-   {
-    title: "Netflix Event Driven Architecture Microservice Backend Clone",
-    tag: "Backend System",
-    summary:
-      "Built a scalable Netflix-like video streaming backend using an event-driven microservices architecture with Spring Boot, Apache Kafka, and AWS S3. The system asynchronously processes large video uploads (up to 2GB), automates encoding with FFmpeg, updates content dynamically, and enables secure high-performance streaming using Redis caching and S3 pre-signed URLs.",
-    stack: ["Java","Spring Boot", "Apache Kafka & Zookeeper", "Redis" ,"MySQL","FFMPEG", "Docker"],
-    status: "Complete",
-    liveUrl: "",
-    repoUrl: "https://github.com/kartavyagore/Netflix-Event-Driven-Architecture-Backend",
-  },
-  {
-    title: "College Event Management Platform",
-    tag: "Web Platform",
-    summary:
-      "A scalable full-stack platform Event management platform for colleges. implemented webAuthn, OAuth 2.0, OTP login along with Event CRUD API, ADMIN Dashboard",
-    stack: ["Next.js", "TypeScript", "MySQL", "Docker"],
-    status: "Complete",
-    liveUrl: "https://now-on-campus.vercel.app/",
-    repoUrl: "https://github.com/deccan-verse-08/NowOnCampus",
-  },
-  {
-    title: "HealthJobsNow - Job Portal Application",
-    tag: "SaaS Product",
-    summary:
-      "A job portal application built in Java Full Stack. The centralized infrastructure for the healthcare students where they can apply to the jobs which posted by healthcare sector recruiter.",
-    stack: ["Next.js", "Java & Spring Boot", "Redis", "Docker","PostgresQL","AWS"],
-    status: "In Progress",
-    liveUrl: "",
-    repoUrl: "https://github.com/deccan-verse-08/health-jobs-now-backend",
-  },
-  {
-    title: "WorkSite - Job Portal Application",
-    tag: "Web Application",
-    summary:
-      "A job portal application for the blue collar worker where they can apply to the jobs which posted by Blue Collar Job Contractor. Implemented authentication system and Google OAuth 2.0 for secure login.",
-    stack: ["Node.js", "React.js", "OAuth 2.0", "MySql"],
-    status: "Completed",
-    liveUrl: "",
-    repoUrl: "https://github.com/kartavyagore/worksite-portal",
-  },
-  {
-    title: "Youtube Clone - Adaptive Streaming",
-    tag: "Web Application",
-    summary:
-      "Engineered a single feature of Youtube (Adaptive Streaming) where I built a video pipeline that transcodes uploads into multiple resolutions using FFmpeg onto GCP Object Storage Bucket.",
-    stack: ["TypeScript", "GCP Cloud Bucket", "Next.js", "FFmpeg"],
-    status: "Completed",
-    liveUrl: "",
-    repoUrl: "https://github.com/kartavyagore/YT-Clone-GCP",
-  },
-]
+import { portfolioProjects } from "@/lib/portfolio-data"
 
 
 
@@ -104,7 +41,7 @@ export default function ProjectsPage() {
 
       <section className="relative mx-auto max-w-6xl px-4 pb-32 sm:px-6 lg:px-8">
         <div className="grid gap-8">
-          {projects.map((project, index) => (
+          {portfolioProjects.map((project, index) => (
             <motion.article
               key={project.title}
               initial={{ opacity: 0, y: 80, scale: 0.97 }}

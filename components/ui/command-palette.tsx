@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
-import { Search, FileText, User, FolderGit2, Mail, MailPlus, TerminalSquare } from "lucide-react"
+import { Search, FileText, User, FolderGit2, Mail, MailPlus, TerminalSquare, BriefcaseBusiness } from "lucide-react"
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -100,6 +100,13 @@ export function CommandPalette() {
             >
               <FolderGit2 className="mr-3 h-4 w-4 text-purple-400 group-aria-selected:text-purple-300" />
               Projects
+            </Command.Item>
+            <Command.Item
+              onSelect={() => runCommand(() => router.push("/recruiter"))}
+              className="group flex cursor-pointer items-center rounded-xl px-3 py-3 text-sm text-white/80 aria-selected:bg-white/10 aria-selected:text-white transition-colors"
+            >
+              <BriefcaseBusiness className="mr-3 h-4 w-4 text-cyan-400 group-aria-selected:text-cyan-300" />
+              Recruiter Mode
             </Command.Item>
             <Command.Item
               onSelect={() => runCommand(() => router.push("/blogs"))}

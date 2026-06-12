@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Home, SquareKanban, User } from "lucide-react"
+import { BookOpen, BriefcaseBusiness, Home, SquareKanban, User } from "lucide-react"
 
 interface DockItem {
   id: string
@@ -15,6 +15,7 @@ const dockItems: DockItem[] = [
   { id: "home", icon: <Home size={20} />, label: "Home", href: "/" },
   { id: "about", icon: <User size={20} />, label: "About", href: "/about" },
   { id: "projects", icon: <SquareKanban size={20} />, label: "Projects", href: "/projects" },
+  { id: "recruiter", icon: <BriefcaseBusiness size={20} />, label: "Recruiter Mode", href: "/recruiter" },
   { id: "blogs", icon: <BookOpen size={20} />, label: "Blogs", href: "/blogs" },
 ]
 

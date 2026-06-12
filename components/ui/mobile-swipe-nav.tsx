@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
-const ROUTES = ["/", "/about", "/projects", "/blogs"]
+const ROUTES = ["/", "/about", "/projects", "/recruiter", "/blogs"]
 const SWIPE_THRESHOLD = 50
 
 export default function MobileSwipeNav({ children }: { children: React.ReactNode }) {

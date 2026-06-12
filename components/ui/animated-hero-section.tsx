@@ -1,7 +1,8 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useRef } from "react"
-import { Search } from "lucide-react"
+import { BriefcaseBusiness, Search } from "lucide-react"
 
 const COLOR = "#FFFFFF"
 const HIT_COLOR = "#333333"
@@ -451,6 +452,8 @@ export function PromptingIsAllYouNeed() {
           <span className="group-hover:translate-x-0.5 transition-transform duration-300">to navigate</span>
         </span>
       </div>
+
+      
     </>
   )
 }
