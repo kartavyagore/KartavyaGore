@@ -7,7 +7,7 @@ export const revalidate = 60
 export default async function BlogsPage() {
   const blogPosts = await getAllBlogsFromDb()
   return (
-    <main className="relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
+    <main className="font-sans relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
       <Suspense fallback={null}>
         <BlogsClient initialPosts={blogPosts} />
       </Suspense>

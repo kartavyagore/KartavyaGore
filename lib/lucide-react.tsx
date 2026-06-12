@@ -51,6 +51,16 @@ export const BookOpen = (props: IconProps) => (
   </Icon>
 )
 
+export const Bot = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="4" y="7" width="16" height="12" rx="3" />
+    <path d="M12 3v4" />
+    <path d="M9 11h.01" />
+    <path d="M15 11h.01" />
+    <path d="M8 15h8" />
+  </Icon>
+)
+
 export const BriefcaseBusiness = (props: IconProps) => (
   <Icon {...props}>
     <rect x="3" y="7" width="18" height="13" rx="2" />
@@ -85,6 +95,21 @@ export const Code = (props: IconProps) => (
   <Icon {...props}>
     <path d="m9 18-6-6 6-6" />
     <path d="m15 6 6 6-6 6" />
+  </Icon>
+)
+
+export const Copy = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </Icon>
+)
+
+export const KeyRound = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="7.5" cy="15.5" r="3.5" />
+    <path d="M11 12l7-7" />
+    <path d="M15 8h3v3" />
   </Icon>
 )
 
@@ -154,6 +179,15 @@ export const PenLine = (props: IconProps) => (
   </Icon>
 )
 
+export const RefreshCw = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 12a9 9 0 0 1 15-6" />
+    <path d="M18 6v4h-4" />
+    <path d="M21 12a9 9 0 0 1-15 6" />
+    <path d="M6 18v-4h4" />
+  </Icon>
+)
+
 export const Search = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="11" cy="11" r="7" />
@@ -161,10 +195,23 @@ export const Search = (props: IconProps) => (
   </Icon>
 )
 
+export const MessageCircle = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.2 8.2 0 0 1-4-.98L3 20l1.04-5.5A8.2 8.2 0 0 1 3.5 11 8.4 8.4 0 0 1 12 2.5a8.4 8.4 0 0 1 9 9z" />
+  </Icon>
+)
+
 export const SendHorizontal = (props: IconProps) => (
   <Icon {...props}>
     <path d="M3 12h14" />
     <path d="M14 5l7 7-7 7" />
+  </Icon>
+)
+
+export const Send = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M22 2 11 13" />
+    <path d="M22 2 15 22l-4-9-9-4z" />
   </Icon>
 )
 

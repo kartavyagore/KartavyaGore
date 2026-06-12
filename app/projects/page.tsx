@@ -13,7 +13,7 @@ export default function ProjectsPage() {
   const yFast = useTransform(scrollYProgress, [0, 1], [0, -220])
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main className="font-sans relative min-h-screen overflow-hidden bg-black text-white">
       <motion.div className="fixed left-0 right-0 top-0 z-50 h-1 origin-left bg-gradient-to-r from-blue-400 via-cyan-300 to-purple-400" style={{ scaleX: progress }} />
 
       <motion.div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" style={{ y: ySlow }} />

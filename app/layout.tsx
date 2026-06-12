@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import MinimalDock from "@/components/ui/minimal-dock";
 import { CommandPalette } from "@/components/ui/command-palette";
 import MobileSwipeNav from "@/components/ui/mobile-swipe-nav";
+import GlobalAiChatWidget from "@/components/ui/global-ai-chat-widget";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,6 +46,7 @@ export default function RootLayout({
         <MobileSwipeNav>{children}</MobileSwipeNav>
         <MinimalDock />
         <CommandPalette />
+        <GlobalAiChatWidget />
       </body>
     </html>
   );

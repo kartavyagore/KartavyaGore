@@ -36,7 +36,7 @@ export default function RecruiterMode() {
   const featuredProjects = portfolioProjects.slice(0, 3)
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main className="font-sans relative min-h-screen overflow-hidden bg-black text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.16),transparent_35%)]" />
 
       <section className="relative mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-4 py-20 sm:px-6 lg:px-8">
@@ -187,6 +187,7 @@ export default function RecruiterMode() {
             </motion.article>
           ))}
         </div>
+
       </section>
     </main>
   )

@@ -258,7 +258,7 @@ function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelineProps) {
                         <Badge className={`px-2 text-xs ${getStatusStyles(item.status)}`}>
                           {item.status === "completed" ? "COMPLETE" : item.status === "in-progress" ? "IN PROGRESS" : "PENDING"}
                         </Badge>
-                        <span className="font-mono text-xs text-white/50">{item.date}</span>
+                        <span className="font-sans text-xs text-white/50">{item.date}</span>
                       </div>
                       <CardTitle className="mt-2 text-sm">{item.title}</CardTitle>
                     </CardHeader>
@@ -271,7 +271,7 @@ function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelineProps) {
                             <Zap size={10} className="mr-1" />
                             Energy Level
                           </span>
-                          <span className="font-mono">{item.energy}%</span>
+                          <span className="font-sans">{item.energy}%</span>
                         </div>
                         <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
                           <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500" style={{ width: `${item.energy}%` }}></div>

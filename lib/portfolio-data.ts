@@ -87,3 +87,32 @@ export const recruiterContacts = {
   github: "https://github.com/kartavyagore",
   linkedin: "https://www.linkedin.com/in/kartavyagore/",
 }
+
+export const portfolioProfile = {
+  name: "Kartavya Datta Gore",
+  education: "Currently pursuing M.Sc Computer Science from Fergusson College and completed B.Sc. Computer Science from S.P. College, Pune.",
+  role: "Java Full Stack Engineer",
+  summary:
+    "I build secure, production-minded web apps and backend systems with Java, Spring Boot, Next.js, TypeScript, MySQL, Docker, Kafka, Redis, AWS, and GCP.",
+  strengths: [
+    "Backend architecture",
+    "Auth and security",
+    "Event-driven systems",
+    "Full-stack delivery",
+    "Media pipelines",
+    "Client-focused builds",
+  ],
+  quickFacts: [
+    "Passkey auth and password fallback on the portfolio admin flow",
+    "Rate limiting on auth, uploads, and AI endpoints",
+    "Duplicate blog protection and blog image upload support",
+    "Event-driven streaming backend with Kafka and FFmpeg",
+  ],
+  recruiterAngles: [
+    "Use the backend and security work when the role is platform or API heavy.",
+    "Use the full-stack and product delivery work when the role wants ownership end to end.",
+    "Use the media pipeline work when the role touches video, storage, or performance-sensitive workflows.",
+  ],
+  preferredIntro:
+    "I'm a Java Full Stack Engineer who likes building secure, scalable products end to end. My work often combines backend architecture, modern React frontends, and practical deployment choices that make the app easier to ship and maintain.",
+}

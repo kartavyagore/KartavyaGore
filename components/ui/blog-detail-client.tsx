@@ -293,7 +293,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
 
   if (!post) {
     return (
-      <main className="relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
+      <main className="font-sans relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
         <article className="mx-auto max-w-3xl rounded-3xl border border-white/15 bg-white/[0.03] p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
           <div className="mb-6">
@@ -316,7 +316,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   }
 
   return (
-    <main className="relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
+    <main className="font-sans relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
       <motion.div
         className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 origin-left z-50"
         style={{ scaleX: scrollYProgress }}
@@ -428,7 +428,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                       </pre>
                     </div>
                   ) : (
-                    <code className="bg-white/10 text-purple-300 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                    <code className="bg-white/10 text-purple-300 px-1.5 py-0.5 rounded text-sm font-sans" {...props}>
                       {children}
                     </code>
                   )
@@ -614,7 +614,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                       onChange={handleMfaCodeChange}
                       placeholder="000 000"
                       autoFocus
-                      className="w-full text-center text-xl tracking-[0.25em] font-mono rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-white outline-none placeholder:text-white/25 focus:border-white/45 focus:border-blue-500/50"
+                      className="w-full text-center text-xl tracking-[0.25em] font-sans rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-white outline-none placeholder:text-white/25 focus:border-white/45 focus:border-blue-500/50"
                     />
                     {isVerifyingMfa && (
                       <div className="flex items-center justify-center gap-2 py-2">

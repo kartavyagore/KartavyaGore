@@ -48,6 +48,11 @@ export function authRateLimitConfig() {
       maxAttempts: toPositiveNumber(process.env.IMAGE_UPLOAD_RATE_LIMIT_MAX, 10),
       windowMs: toPositiveNumber(process.env.IMAGE_UPLOAD_RATE_LIMIT_WINDOW_MS, 5 * 60 * 1000),
     },
+    aiAssistant: {
+      keyPrefix: "ai:recruiter",
+      maxAttempts: toPositiveNumber(process.env.AI_RATE_LIMIT_MAX, 20),
+      windowMs: toPositiveNumber(process.env.AI_RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000),
+    },
   }
 }
 

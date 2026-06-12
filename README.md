@@ -78,6 +78,20 @@ I'm actively looking for roles where I can contribute to meaningful products and
 
 ---
 
+## Gemini AI setup
+
+- Set `GEMINI_API_KEY` for local fallback or use the in-app **Manage API KEY** button after logging in.
+- Recommended default model for the free tier: `gemini-2.5-flash` (use `gemini-2.5-flash-lite` if you want even lighter usage).
+- Recommended optional env vars: `GEMINI_MODEL`, `GEMINI_KEY_SECRET`, `AI_RATE_LIMIT_MAX`, `AI_RATE_LIMIT_WINDOW_MS`.
+- The saved Gemini key is encrypted in the database and only used server-side.
+
+Recruiter Mode now includes:
+- Recruiter Copilot
+- Project Matcher
+- Blog Summarizer
+- Smart Search
+- Auto Intro
+
 <div align="center">
 
 *Thanks for stopping by — let's build something great together.*

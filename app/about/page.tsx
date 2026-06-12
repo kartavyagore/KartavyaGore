@@ -4,10 +4,10 @@ import { EducationScrollSection } from "@/components/ui/education-scroll-section
 
 export default function AboutPage() {
   return (
-    <>
+    <main className="font-sans">
       <GlassmorphismPortfolioBlock />
       <RadialOrbitalTimelineSection />
       <EducationScrollSection />
-    </>
+    </main>
   )
 }

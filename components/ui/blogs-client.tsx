@@ -579,7 +579,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter blog title"
-                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm font-sans text-white outline-none placeholder:text-white/40 focus:border-white/45"
               />
             </div>
             <div>
@@ -645,7 +645,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="react, nextjs, typescript"
-                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm font-sans text-white outline-none placeholder:text-white/40 focus:border-white/45"
                 />
               </div>
               <div>
@@ -656,7 +656,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                   value={readTime}
                   onChange={(e) => setReadTime(e.target.value)}
                   placeholder="e.g. 6 min read"
-                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm font-sans text-white outline-none placeholder:text-white/40 focus:border-white/45"
                 />
               </div>
             </div>
@@ -862,7 +862,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                       onChange={handleMfaCodeChange}
                       placeholder="000 000"
                       autoFocus
-                      className="w-full text-center text-xl tracking-[0.25em] font-mono rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-white outline-none placeholder:text-white/25 focus:border-white/45 focus:border-blue-500/50"
+                      className="w-full text-center text-xl tracking-[0.25em] font-sans rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-white outline-none placeholder:text-white/25 focus:border-white/45 focus:border-blue-500/50"
                     />
                     {isVerifyingMfa && (
                       <div className="flex items-center justify-center gap-2 py-2">

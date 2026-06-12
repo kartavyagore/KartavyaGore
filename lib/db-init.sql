@@ -29,3 +29,10 @@ CREATE TABLE IF NOT EXISTS webauthn_challenges (
 -- Optional blog cover image support (safe no-op if already present)
 ALTER TABLE blogs
   ADD COLUMN IF NOT EXISTS image_url TEXT NULL;
+
+-- App settings for encrypted admin-managed secrets
+CREATE TABLE IF NOT EXISTS app_settings (
+  setting_key VARCHAR(100) PRIMARY KEY,
+  encrypted_value TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
