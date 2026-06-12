@@ -151,7 +151,7 @@ export function CommandPalette() {
             </Command.Item>
             <Command.Item
               onSelect={() => runCommand(() => {
-                navigator.clipboard.writeText("kartavyagoree@gmail.com")
+                navigator.clipboard.writeText("kartavyagore0@gmail.com")
               })}
               className="group flex cursor-pointer items-center rounded-xl px-3 py-3 text-sm text-white/80 aria-selected:bg-white/10 aria-selected:text-white transition-colors"
             >
