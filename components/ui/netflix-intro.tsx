@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function NetflixIntro({
@@ -8,11 +8,11 @@ export default function NetflixIntro({
 }: {
   onComplete: () => void;
 }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [phase, setPhase] = useState<"zoom" | "flash" | "done">("zoom");
-  const [targetScale, setTargetScale] = useState(10);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [phase, setPhase] = React.useState<"zoom" | "flash" | "done">("zoom");
+  const [targetScale, setTargetScale] = React.useState(10);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const updateScale = () => {
       const baseWidth = 600;
       const scale = window.innerWidth / baseWidth;
@@ -23,7 +23,16 @@ export default function NetflixIntro({
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
+    // Respect reduced motion: skip the intro entirely.
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (prefersReducedMotion) {
+      onComplete();
+      return;
+    }
+
     audioRef.current = new Audio("/netflix-intro.mp3");
     audioRef.current.volume = 1.0;
 
@@ -49,10 +58,12 @@ export default function NetflixIntro({
     };
   }, [onComplete]);
 
+  // The NetflixIntro is intentionally cinematic and not theme-driven —
+  // a black backdrop and white flash are part of the brand moment.
   return (
     <AnimatePresence>
       {phase !== "done" && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black">
           <motion.div
             className="relative z-10"
             initial={{ scale: 0.1, opacity: 0 }}
@@ -70,14 +81,14 @@ export default function NetflixIntro({
             <img
               src="/KartavyaLogoBgRmvd.png"
               alt="Kartavya"
-              className="w-[600px] max-w-[90vw] select-none pointer-events-none"
+              className="pointer-events-none w-[600px] max-w-[90vw] select-none"
               draggable={false}
             />
           </motion.div>
 
           {phase === "flash" && (
             <motion.div
-              className="absolute inset-0 bg-white z-20 pointer-events-none"
+              className="pointer-events-none absolute inset-0 z-20 bg-white"
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 1, 0] }}
               transition={{ duration: 0.8, times: [0, 0.2, 1] }}

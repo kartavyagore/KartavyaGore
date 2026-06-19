@@ -1,7 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { KeyRound, Loader2, Trash } from "@/lib/lucide-react"
 import PasskeyRegister from "./passkey-register"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 interface PasskeyCredential {
   id: string
@@ -25,8 +28,9 @@ export default function PasskeyManager({
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadPasskeys()
+      void loadPasskeys()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated])
 
   const loadPasskeys = async () => {
@@ -49,8 +53,8 @@ export default function PasskeyManager({
 
   const handleDeletePasskey = async (id: string, deviceName: string | null) => {
     if (
-      !confirm(
-        `Are you sure you want to delete the passkey for "${deviceName || "Unknown Device"}"?`
+      !window.confirm(
+        `Are you sure you want to delete the passkey for "${deviceName || "Unknown Device"}"?`,
       )
     ) {
       return
@@ -65,9 +69,9 @@ export default function PasskeyManager({
       if (response.ok) {
         showToast?.(
           `Passkey for ${deviceName || "device"} deleted successfully`,
-          "success"
+          "success",
         )
-        loadPasskeys()
+        void loadPasskeys()
       } else {
         throw new Error("Failed to delete passkey")
       }
@@ -94,21 +98,22 @@ export default function PasskeyManager({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">Manage Passkeys</h3>
-        <button
+        <h3 className="text-lg font-semibold text-foreground">Manage Passkeys</h3>
+        <Button
+          variant="accent"
           onClick={() => setShowRegisterForm(!showRegisterForm)}
-          className="rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-300 transition-all hover:bg-blue-500/20"
+          className="h-auto rounded-full px-4 py-2 text-xs uppercase tracking-[0.18em]"
         >
           {showRegisterForm ? "Cancel" : "+ Add Passkey"}
-        </button>
+        </Button>
       </div>
 
       {showRegisterForm && (
-        <div className="p-4 rounded-lg border border-blue-500/20 bg-blue-500/5">
+        <div className="rounded-lg border border-accent/20 bg-accent-soft p-4">
           <PasskeyRegister
             onSuccess={() => {
               setShowRegisterForm(false)
-              loadPasskeys()
+              void loadPasskeys()
             }}
             showToast={showToast}
           />
@@ -118,43 +123,13 @@ export default function PasskeyManager({
       <div className="space-y-3">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <svg
-              className="animate-spin h-8 w-8 text-blue-300"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
+            <Loader2 className="h-8 w-8 animate-spin text-accent" />
           </div>
         ) : passkeys.length === 0 ? (
-          <div className="text-center py-8 px-4 rounded-lg border border-white/10 bg-white/[0.03]">
-            <svg
-              className="h-12 w-12 text-white/20 mx-auto mb-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-            <p className="text-sm text-white/60">No passkeys registered yet</p>
-            <p className="text-xs text-white/40 mt-1">
+          <div className="rounded-lg border border-border bg-muted px-4 py-8 text-center">
+            <KeyRound className="mx-auto mb-3 h-12 w-12 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">No passkeys registered yet</p>
+            <p className="mt-1 text-xs text-muted-foreground/70">
               Add a passkey to enable quick biometric login
             </p>
           </div>
@@ -162,49 +137,39 @@ export default function PasskeyManager({
           passkeys.map((passkey) => (
             <div
               key={passkey.id}
-              className="flex items-center justify-between p-4 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.05] transition-colors"
+              className="flex items-center justify-between rounded-lg border border-border bg-muted p-4 transition-colors hover:bg-muted/80"
             >
               <div className="flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <svg
-                    className="h-5 w-5 text-blue-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"
-                    />
-                  </svg>
+                <div className="rounded-lg bg-accent-soft p-2">
+                  <KeyRound className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-foreground">
                     {passkey.deviceName || "Unknown Device"}
                   </p>
-                  <p className="text-xs text-white/40">
-                    Added {formatDate(passkey.createdAt)} •{" "}
-                    Last used {formatDate(passkey.lastUsedAt)}
+                  <p className="text-xs text-muted-foreground">
+                    Added {formatDate(passkey.createdAt)} • Last used{" "}
+                    {formatDate(passkey.lastUsedAt)}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() =>
-                  handleDeletePasskey(passkey.id, passkey.deviceName)
-                }
-                className="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-red-300 transition-all hover:bg-red-500/20"
+              <Button
+                variant="outline"
+                onClick={() => handleDeletePasskey(passkey.id, passkey.deviceName)}
+                className={cn(
+                  "h-auto rounded-full border-danger/30 bg-danger/15 px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-danger hover:bg-danger/20 hover:text-danger",
+                )}
               >
+                <Trash className="mr-1.5 h-3 w-3" />
                 Delete
-              </button>
+              </Button>
             </div>
           ))
         )}
       </div>
 
       {passkeys.length > 0 && (
-        <p className="text-xs text-white/40 text-center">
+        <p className="text-center text-xs text-muted-foreground">
           You can use any of these passkeys to log in securely
         </p>
       )}

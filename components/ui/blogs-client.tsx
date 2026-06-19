@@ -12,7 +12,7 @@ const PasskeyLogin = dynamic(() => import("./passkey-login"), { ssr: false })
 const PasskeyManager = dynamic(() => import("./passkey-manager"), { ssr: false })
 
 import { normalizeDisplayImageUrl, toRenderableImageSrc } from "@/lib/image-url"
-import { PenLine } from "lucide-react"
+import { PenLine } from "@/lib/lucide-react"
 import { SlideButton } from "./slide-button"
 
 type BlogsClientProps = {
@@ -508,20 +508,20 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.05 }}
-          className="mt-4 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-4xl font-extrabold text-transparent md:text-6xl"
+          className="mt-4 font-archive bg-gradient-to-r from-foreground via-blue-100 to-purple-200 bg-clip-text text-4xl font-extrabold text-transparent md:text-6xl"
         >
           Ideas, Builds & Learnings
         </motion.h1>
       </section>
 
-      <section className="mx-auto mt-10 max-w-6xl rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+      <section className="mx-auto mt-10 max-w-6xl rounded-2xl border border-border bg-muted p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col">
-            <h2 className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-              <PenLine className="h-5 w-5 text-white/80" />
+            <h2 className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+              <PenLine className="h-5 w-5 text-muted-foreground" />
               {editingSlug ? "Edit Insight" : "Publisher Studio"}
             </h2>
-            <p className="mt-1 text-xs text-white/50">Draft, edit, and publish your latest thoughts to the live feed.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Draft, edit, and publish your latest thoughts to the live feed.</p>
           </div>
           <div className="flex gap-2">
             {isAuthenticated && (
@@ -546,7 +546,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               <button
                 type="button"
                 onClick={handleAddBlogClick}
-                className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20"
+                className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-muted"
               >
                 Add a blog
               </button>
@@ -554,7 +554,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               <button
                 type="button"
                 onClick={handleCancelEdit}
-                className="rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
+                className="rounded-full border border-border bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground/90 transition-colors hover:bg-muted"
               >
                 Cancel
               </button>
@@ -572,18 +572,18 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
         {showForm && (
           <form className="mt-5 grid gap-4">
             <div>
-              <label className="mb-1 block text-xs text-white/60">
+              <label className="mb-1 block text-xs text-muted-foreground">
                 Blog title <span className="text-red-400">*</span>
               </label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter blog title"
-                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm font-sans text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-sans text-foreground outline-none placeholder:text-foreground/40 focus:border-accent"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">
+              <label className="mb-1 block text-xs text-muted-foreground">
                 Short excerpt <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -591,41 +591,41 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                 onChange={(e) => setExcerpt(e.target.value)}
                 placeholder="Brief description of your blog"
                 rows={3}
-                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-accent"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">
-                Blog image URL <span className="text-white/40">(optional)</span>
+              <label className="mb-1 block text-xs text-muted-foreground">
+                Blog image URL <span className="text-foreground/40">(optional)</span>
               </label>
               <input
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="https://example.com/blog-cover.jpg"
-                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-accent"
               />
               <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white file:mr-3 file:rounded-md file:border-0 file:bg-white/10 file:px-3 file:py-1 file:text-xs file:font-semibold file:uppercase file:tracking-[0.08em] file:text-white hover:file:bg-white/20"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-xs file:font-semibold file:uppercase file:tracking-[0.08em] file:text-foreground hover:file:bg-muted"
                 />
                 <button
                   type="button"
                   onClick={handleImageUpload}
                   disabled={!imageFile || isUploadingImage}
-                  className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isUploadingImage ? "Uploading..." : "Upload Image"}
                 </button>
               </div>
-              <p className="mt-1 text-xs text-white/45">
+              <p className="mt-1 text-xs text-foreground/45">
                 Upload to Supabase Storage or paste a direct image URL.
               </p>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-white/60">
+              <label className="mb-1 block text-xs text-muted-foreground">
                 Full content <span className="text-red-400">*</span>
               </label>
               <textarea
@@ -633,30 +633,30 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Write your blog content here in Markdown... (e.g., # Heading, **bold**)"
                 rows={10}
-                className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-accent"
               />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs text-white/60">
+                <label className="mb-1 block text-xs text-muted-foreground">
                   Tags <span className="text-red-400">*</span>
                 </label>
                 <input
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="react, nextjs, typescript"
-                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm font-sans text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-sans text-foreground outline-none placeholder:text-foreground/40 focus:border-accent"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs text-white/60">
+                <label className="mb-1 block text-xs text-muted-foreground">
                   Read time <span className="text-red-400">*</span>
                 </label>
                 <input
                   value={readTime}
                   onChange={(e) => setReadTime(e.target.value)}
                   placeholder="e.g. 6 min read"
-                  className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2 text-sm font-sans text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm font-sans text-foreground outline-none placeholder:text-foreground/40 focus:border-accent"
                 />
               </div>
             </div>
@@ -678,7 +678,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
             placeholder="Search blogs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-full border border-white/20 bg-white/5 px-6 py-3.5 text-base text-white outline-none transition-colors placeholder:text-white/40 focus:border-white/40 focus:bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.03)]"
+            className="w-full rounded-full border border-border bg-muted px-6 py-3.5 text-base text-foreground outline-none transition-colors placeholder:text-foreground/40 focus:border-accent focus:bg-muted shadow-[0_0_15px_rgba(255,255,255,0.03)]"
           />
         </div>
         {allTags.length > 0 && (
@@ -689,7 +689,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               className={`flex-none rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
                 selectedTag === null
                   ? "border-blue-500 bg-blue-500/20 text-blue-200"
-                  : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10"
+                  : "border-border bg-muted text-muted-foreground hover:bg-muted"
               }`}
             >
               All
@@ -702,7 +702,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                 className={`flex-none rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
                   selectedTag === tag
                     ? "border-blue-500 bg-blue-500/20 text-blue-200"
-                    : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10"
+                    : "border-border bg-muted text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {tag}
@@ -724,11 +724,11 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.55, delay: index * 0.07 }}
               whileHover={{ y: -5 }}
-              className="group rounded-2xl border border-white/15 bg-white/[0.04] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+              className="group rounded-2xl border border-border bg-muted p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
             >
               <Link href={`/blogs/${post.slug}`} className="block">
                 {imageSrc ? (
-                  <div className="mb-4 overflow-hidden rounded-xl border border-white/10">
+                  <div className="mb-4 overflow-hidden rounded-xl border border-border">
                     <img
                       src={imageSrc}
                       alt={post.title}
@@ -738,14 +738,14 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                     />
                   </div>
                 ) : null}
-                <p className="text-xs uppercase tracking-[0.18em] text-white/55">
+                <p className="text-xs uppercase tracking-[0.18em] text-foreground/55">
                   {post.publishedAt} · {post.readTime}
                 </p>
-                <h2 className="mt-3 text-xl font-semibold leading-snug text-white">{post.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-white/75">{post.excerpt}</p>
+                <h2 className="mt-3 text-xl font-semibold leading-snug text-foreground">{post.title}</h2>
+                <p className="mt-3 text-sm leading-7 text-muted-foreground">{post.excerpt}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {post.tags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-white/20 bg-white/[0.06] px-3 py-1 text-xs text-white/80">
+                    <span key={tag} className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-muted-foreground">
                       {tag}
                     </span>
                   ))}
@@ -764,7 +764,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm"
             onClick={() => {
               setShowAuthModal(false)
               setAdminPassword("")
@@ -777,21 +777,21 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="w-full max-w-md rounded-2xl border border-white/15 bg-black/90 p-6 shadow-2xl"
+              className="w-full max-w-md rounded-2xl border border-border bg-overlay p-6 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-semibold text-white">Admin Authentication</h3>
-              <p className="mt-2 text-sm text-white/60 mb-5">
+              <h3 className="text-xl font-semibold text-foreground">Admin Authentication</h3>
+              <p className="mt-2 text-sm text-muted-foreground mb-5">
                 Manage your portfolio blogs securely using MFA, Passkeys, or standard password.
               </p>
 
               {/* 3-Tab Selector */}
-              <div className="flex border-b border-white/10 mb-6">
+              <div className="flex border-b border-border mb-6">
                 <button
                   type="button"
                   onClick={() => setAuthMethod("passkey")}
                   className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "passkey" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                    authMethod === "passkey" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-muted-foreground"
                   }`}
                 >
                   Passkey
@@ -800,7 +800,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                   type="button"
                   onClick={() => setAuthMethod("password")}
                   className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "password" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                    authMethod === "password" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-muted-foreground"
                   }`}
                 >
                   Password
@@ -809,7 +809,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                   type="button"
                   onClick={() => setAuthMethod("mfa")}
                   className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "mfa" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                    authMethod === "mfa" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-muted-foreground"
                   }`}
                 >
                   MFA Code
@@ -833,13 +833,13 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                       onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                       placeholder="Enter admin password"
                       autoFocus
-                      className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                      className="w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-accent"
                     />
                     <div className="mt-4 flex gap-3">
                       <button
                         type="button"
                         onClick={handleLogin}
-                        className="flex-1 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20"
+                        className="flex-1 rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-muted"
                       >
                         Login
                       </button>
@@ -849,7 +849,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
 
                 {authMethod === "mfa" && (
                   <div className="grid gap-4">
-                    <p className="text-xs text-white/50 text-center leading-relaxed">
+                    <p className="text-xs text-muted-foreground text-center leading-relaxed">
                       Enter the 6-digit code generated by your Google Authenticator app.
                     </p>
                     <input
@@ -862,7 +862,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                       onChange={handleMfaCodeChange}
                       placeholder="000 000"
                       autoFocus
-                      className="w-full text-center text-xl tracking-[0.25em] font-sans rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-white outline-none placeholder:text-white/25 focus:border-white/45 focus:border-blue-500/50"
+                      className="w-full text-center text-xl tracking-[0.25em] font-sans rounded-lg border border-border bg-card px-3 py-2.5 text-foreground outline-none placeholder:text-muted-foreground/40 focus:border-accent focus:border-blue-500/50"
                     />
                     {isVerifyingMfa && (
                       <div className="flex items-center justify-center gap-2 py-2">
@@ -870,7 +870,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span className="text-xs text-white/60 font-semibold tracking-wider">Verifying code automatically...</span>
+                        <span className="text-xs text-muted-foreground font-semibold tracking-wider">Verifying code automatically...</span>
                       </div>
                     )}
                   </div>
@@ -885,7 +885,7 @@ export function BlogsClient({ initialPosts }: BlogsClientProps) {
                   setMfaCode("")
                   setAuthMethod("passkey")
                 }}
-                className="mt-6 w-full rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
+                className="mt-6 w-full rounded-full border border-border bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground/90 transition-colors hover:bg-muted"
               >
                 Cancel
               </button>

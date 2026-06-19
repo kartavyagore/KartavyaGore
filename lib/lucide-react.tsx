@@ -163,6 +163,34 @@ export const Mail = (props: IconProps) => (
   </Icon>
 )
 
+export const Trash = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 6h18" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </Icon>
+)
+
+export const Moon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+  </Icon>
+)
+
+export const Sun = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="m4.93 4.93 1.41 1.41" />
+    <path d="m17.66 17.66 1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="m4.93 19.07 1.41-1.41" />
+    <path d="m17.66 6.34 1.41-1.41" />
+  </Icon>
+)
+
 export const MailPlus = (props: IconProps) => (
   <Icon {...props}>
     <rect x="3" y="5" width="18" height="14" rx="2" />

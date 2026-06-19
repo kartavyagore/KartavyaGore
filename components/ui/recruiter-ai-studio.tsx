@@ -10,7 +10,7 @@ import {
   Loader2,
   RefreshCw,
   Sparkles,
-} from "lucide-react"
+} from "@/lib/lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -227,20 +227,20 @@ export default function RecruiterAIStudio() {
   const currentPlaceholder = modeMeta[mode].placeholder
 
   return (
-    <section className="relative mt-20 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-8">
+    <section className="relative mt-20 overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-2xl backdrop-blur-xl md:p-8">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-cyan-400/[0.08] via-transparent to-transparent" />
 
       <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-3xl">
           <div className="flex flex-wrap items-center gap-3">
-            <Badge className="border border-cyan-400/20 bg-cyan-400/10 text-cyan-50">AI Studio</Badge>
-            <span className="text-xs uppercase tracking-[0.2em] text-white/45">Powered by Google Gemini</span>
+            <Badge className="border border-accent/20 bg-accent-soft text-foreground">AI Studio</Badge>
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Powered by Google Gemini</span>
           </div>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
             Recruiter tools that answer, match, summarize, and search for you.
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-white/70 md:text-base">
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground md:text-base">
             Use this studio to answer recruiter questions, find the best project for a role, summarize a blog, search by
             meaning, or generate a polished intro.
           </p>
@@ -252,12 +252,12 @@ export default function RecruiterAIStudio() {
               type="button"
               variant="outline"
               onClick={() => setShowKeyModal(true)}
-              className="gap-2 rounded-full border-white/20 bg-white/5 px-4"
+              className="gap-2 rounded-full border-border bg-muted px-4"
             >
               <KeyRound className="h-4 w-4" />
               Manage API KEY
             </Button>
-            <div className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs text-white/55">
+            <div className="rounded-full border border-border bg-card px-4 py-2 text-xs text-muted-foreground">
               {keyStatus?.configured
                 ? `Gemini key active (${keyStatus.source}${keyStatus.preview ? ` · ${keyStatus.preview}` : ""})`
                 : "Gemini key not configured"}
@@ -276,33 +276,36 @@ export default function RecruiterAIStudio() {
               setResult(null)
               setError("")
             }}
-            className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
+            aria-label={`Switch to ${modeMeta[item].title} mode`}
+            aria-pressed={mode === item}
+            className={`rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
               mode === item
-                ? "border-cyan-400/30 bg-cyan-400/10 text-white"
-                : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.06]"
+                ? "border-accent bg-accent-soft text-foreground"
+                : "border-border bg-surface text-muted-foreground hover:bg-muted"
             }`}
           >
             <div className="text-sm font-semibold">{modeMeta[item].title}</div>
-            <div className="mt-1 text-xs leading-5 text-white/55">{modeMeta[item].description}</div>
+            <div className="mt-1 text-xs leading-5 text-muted-foreground">{modeMeta[item].description}</div>
           </button>
         ))}
       </div>
 
       <div className="relative mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="border-white/10 bg-black/35 text-white">
+        <Card className="border-border bg-card text-foreground">
           <CardHeader>
             <CardTitle className="text-xl">{modeMeta[mode].title}</CardTitle>
-            <CardDescription className="text-white/65">{modeMeta[mode].description}</CardDescription>
+            <CardDescription className="text-muted-foreground">{modeMeta[mode].description}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {mode === "summary" ? (
               <div className="grid gap-4">
                 <label className="space-y-2">
-                  <span className="text-xs uppercase tracking-[0.18em] text-white/50">Choose a blog</span>
+                  <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Choose a blog</span>
                   <select
                     value={selectedBlogSlug}
                     onChange={(e) => setSelectedBlogSlug(e.target.value)}
-                    className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none"
+                    aria-label="Choose a blog post"
+                    className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     <option value="">Select a blog post</option>
                     {blogs.map((blog) => (
@@ -313,13 +316,14 @@ export default function RecruiterAIStudio() {
                   </select>
                 </label>
                 <label className="space-y-2">
-                  <span className="text-xs uppercase tracking-[0.18em] text-white/50">Or paste custom text</span>
+                  <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Or paste custom text</span>
                   <textarea
                     value={customBlogText}
                     onChange={(e) => setCustomBlogText(e.target.value)}
                     placeholder="Paste a long blog section or a draft here..."
                     rows={6}
-                    className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm leading-7 text-white outline-none placeholder:text-white/35"
+                    aria-label="Custom blog text"
+                    className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm leading-7 text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent"
                   />
                 </label>
               </div>
@@ -329,7 +333,8 @@ export default function RecruiterAIStudio() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={currentPlaceholder}
                 rows={5}
-                className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm leading-7 text-white outline-none placeholder:text-white/35"
+                aria-label={modeMeta[mode].title}
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm leading-7 text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent"
               />
             )}
 
@@ -338,7 +343,7 @@ export default function RecruiterAIStudio() {
                 type="button"
                 onClick={runAssistant}
                 disabled={loading}
-                className="gap-2 rounded-full bg-white px-5 text-black hover:bg-white/90"
+                className="gap-2 rounded-full bg-foreground px-5 text-background hover:bg-foreground/90"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 {modeMeta[mode].action}
@@ -352,7 +357,7 @@ export default function RecruiterAIStudio() {
                   setResult(null)
                   setError("")
                 }}
-                className="gap-2 rounded-full border-white/20 bg-white/5"
+                className="gap-2 rounded-full border-border bg-muted"
               >
                 <RefreshCw className="h-4 w-4" />
                 Reset
@@ -360,26 +365,27 @@ export default function RecruiterAIStudio() {
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/65">
+              <div className="rounded-2xl border border-border bg-surface p-4 text-xs text-muted-foreground">
                 Ask about backend strength, security, or architecture.
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/65">
+              <div className="rounded-2xl border border-border bg-surface p-4 text-xs text-muted-foreground">
                 Match the best project to a job description.
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/65">
+              <div className="rounded-2xl border border-border bg-surface p-4 text-xs text-muted-foreground">
                 Summarize blogs or search the portfolio by meaning.
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="text-xs uppercase tracking-[0.18em] text-white/45">Suggested prompts</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Suggested prompts</div>
               <div className="flex flex-wrap gap-2">
               {suggestedPrompts.map((prompt) => (
                 <button
                   key={prompt}
                   type="button"
                   onClick={() => setQuery(prompt)}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-xs leading-5 text-white/70 transition-colors hover:bg-white/[0.06]"
+                  aria-label={`Use suggested prompt: ${prompt}`}
+                  className="rounded-full border border-border bg-surface px-3 py-2 text-left text-xs leading-5 text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {prompt}
                 </button>
@@ -389,10 +395,10 @@ export default function RecruiterAIStudio() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-black/35 text-white">
+        <Card className="border-border bg-card text-foreground">
           <CardHeader>
             <CardTitle className="text-xl">AI output</CardTitle>
-            <CardDescription className="text-white/65">
+            <CardDescription className="text-muted-foreground">
               {selectedBlog ? `Selected blog: ${selectedBlog.title}` : "The result will appear here."}
             </CardDescription>
           </CardHeader>
@@ -405,51 +411,52 @@ export default function RecruiterAIStudio() {
 
             {result ? (
               <div className="space-y-5">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="rounded-2xl border border-border bg-surface p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Response</div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Response</div>
                     <button
                       type="button"
                       onClick={copyAnswer}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-white/70 hover:bg-white/[0.08]"
+                      aria-label={copied ? "Copied" : "Copy response to clipboard"}
+                      className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                       Copy
                     </button>
                   </div>
-                  <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-white/80">
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground/80">
                     {result.answer || result.summary || result.shortIntro}
                   </p>
                 </div>
 
                 {result.summary ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Summary</div>
-                    <p className="mt-3 text-sm leading-7 text-white/75">{result.summary}</p>
+                  <div className="rounded-2xl border border-border bg-surface p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Summary</div>
+                    <p className="mt-3 text-sm leading-7 text-foreground/75">{result.summary}</p>
                   </div>
                 ) : null}
 
                 {result.shortIntro ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Short intro</div>
-                    <p className="mt-3 text-sm leading-7 text-white/75">{result.shortIntro}</p>
+                  <div className="rounded-2xl border border-border bg-surface p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Short intro</div>
+                    <p className="mt-3 text-sm leading-7 text-foreground/75">{result.shortIntro}</p>
                   </div>
                 ) : null}
 
                 {result.recruiterAngle ? (
-                  <div className="rounded-2xl border border-cyan-400/15 bg-cyan-400/10 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-cyan-100/70">Recruiter angle</div>
-                    <p className="mt-3 text-sm leading-7 text-cyan-50">{result.recruiterAngle}</p>
+                  <div className="rounded-2xl border border-accent/15 bg-accent-soft p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-accent">Recruiter angle</div>
+                    <p className="mt-3 text-sm leading-7 text-foreground">{result.recruiterAngle}</p>
                   </div>
                 ) : null}
 
                 {result.keyTakeaways?.length ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Key takeaways</div>
-                    <ul className="mt-3 space-y-2 text-sm leading-7 text-white/75">
+                  <div className="rounded-2xl border border-border bg-surface p-4">
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Key takeaways</div>
+                    <ul className="mt-3 space-y-2 text-sm leading-7 text-foreground/75">
                       {result.keyTakeaways.map((item) => (
                         <li key={item} className="flex gap-2">
-                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -459,16 +466,16 @@ export default function RecruiterAIStudio() {
 
                 {result.projectMatches?.length ? (
                   <div className="space-y-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Project matches</div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Project matches</div>
                     {result.projectMatches.map((project) => (
-                      <div key={project.title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                      <div key={project.title} className="rounded-2xl border border-border bg-surface p-4">
                         <div className="flex items-center justify-between gap-3">
-                          <h4 className="font-semibold text-white">{project.title}</h4>
-                          <Badge variant="outline" className="border-white/15 text-white/70">
+                          <h4 className="font-semibold text-foreground">{project.title}</h4>
+                          <Badge variant="outline" className="border-border text-muted-foreground">
                             {project.relevance}
                           </Badge>
                         </div>
-                        <p className="mt-2 text-sm leading-7 text-white/70">{project.reason}</p>
+                        <p className="mt-2 text-sm leading-7 text-muted-foreground">{project.reason}</p>
                       </div>
                     ))}
                   </div>
@@ -476,27 +483,27 @@ export default function RecruiterAIStudio() {
 
                 {result.blogMatches?.length ? (
                   <div className="space-y-3">
-                    <div className="text-xs uppercase tracking-[0.18em] text-white/45">Blog matches</div>
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Blog matches</div>
                     {result.blogMatches.map((blog) => (
                       <Link
                         key={blog.slug}
                         href={`/blogs/${blog.slug}`}
-                        className="block rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]"
+                        className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <h4 className="font-semibold text-white">{blog.title}</h4>
-                          <Badge variant="outline" className="border-white/15 text-white/70">
+                          <h4 className="font-semibold text-foreground">{blog.title}</h4>
+                          <Badge variant="outline" className="border-border text-muted-foreground">
                             {blog.relevance}
                           </Badge>
                         </div>
-                        <p className="mt-2 text-sm leading-7 text-white/70">{blog.reason}</p>
+                        <p className="mt-2 text-sm leading-7 text-muted-foreground">{blog.reason}</p>
                       </Link>
                     ))}
                   </div>
                 ) : null}
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] p-6 text-sm leading-7 text-white/55">
+              <div className="rounded-2xl border border-dashed border-border bg-surface p-6 text-sm leading-7 text-muted-foreground">
                 Run a prompt to see recruiter-ready answers, project matches, search results, or a short intro.
               </div>
             )}
@@ -510,7 +517,7 @@ export default function RecruiterAIStudio() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-background/70 px-4 backdrop-blur-sm"
             onClick={() => setShowKeyModal(false)}
           >
             <motion.div
@@ -518,25 +525,31 @@ export default function RecruiterAIStudio() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
               onClick={(event) => event.stopPropagation()}
-              className="w-full max-w-lg rounded-3xl border border-white/10 bg-black/95 p-6 text-white shadow-[0_25px_80px_rgba(0,0,0,0.55)]"
+              className="w-full max-w-lg rounded-3xl border border-border bg-surface p-6 text-foreground shadow-2xl"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-2xl font-bold">Manage API KEY</h3>
-                  <p className="mt-2 text-sm leading-7 text-white/65">
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
                     Save or replace your Google Gemini API key. It is stored encrypted in the database and only used on
                     the server.
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setShowKeyModal(false)} className="shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowKeyModal(false)}
+                  aria-label="Close manage API key dialog"
+                  className="shrink-0"
+                >
                   ×
                 </Button>
               </div>
 
               <div className="mt-6 space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-[0.18em] text-white/45">Current status</label>
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/70">
+                  <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Current status</label>
+                  <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-muted-foreground">
                     {keyStatus?.configured
                       ? `Configured via ${keyStatus.source}${keyStatus.preview ? ` · ${keyStatus.preview}` : ""}`
                       : "No Gemini key saved yet."}
@@ -544,16 +557,22 @@ export default function RecruiterAIStudio() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-[0.18em] text-white/45">Gemini API key</label>
-                  <div className="flex items-center gap-2 rounded-2xl border border-white/15 bg-black/40 px-4 py-3">
+                  <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Gemini API key</label>
+                  <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
                     <input
                       type={showApiKey ? "text" : "password"}
                       value={apiKeyInput}
                       onChange={(e) => setApiKeyInput(e.target.value)}
                       placeholder="Paste your Google Gemini API key"
-                      className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+                      aria-label="Gemini API key"
+                      className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent"
                     />
-                    <Button variant="ghost" size="sm" onClick={() => setShowApiKey((value) => !value)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowApiKey((value) => !value)}
+                      aria-label={showApiKey ? "Hide API key" : "Show API key"}
+                    >
                       {showApiKey ? "Hide" : "Show"}
                     </Button>
                   </div>
@@ -565,17 +584,17 @@ export default function RecruiterAIStudio() {
                   type="button"
                   onClick={saveGeminiKey}
                   disabled={savingKey}
-                  className="gap-2 rounded-full bg-white px-5 text-black hover:bg-white/90"
+                  className="gap-2 rounded-full bg-foreground px-5 text-background hover:bg-foreground/90"
                 >
                   {savingKey ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                   Save key
                 </Button>
-                <Button variant="outline" onClick={() => setShowKeyModal(false)} className="rounded-full border-white/20 bg-white/5">
+                <Button variant="outline" onClick={() => setShowKeyModal(false)} className="rounded-full border-border bg-muted">
                   Cancel
                 </Button>
               </div>
 
-              <p className="mt-4 text-xs leading-6 text-white/45">
+              <p className="mt-4 text-xs leading-6 text-muted-foreground">
                 Tip: if your app uses an environment Gemini key, this database key will override it.
               </p>
             </motion.div>

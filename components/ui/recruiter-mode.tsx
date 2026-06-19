@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowRight, BriefcaseBusiness, Mail, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
+import { ArrowRight, BriefcaseBusiness, Mail, Sparkles } from "@/lib/lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +11,7 @@ import {
   recruiterContacts,
   recruiterHighlights,
 } from "@/lib/portfolio-data"
+import { cn } from "@/lib/utils"
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -36,8 +37,8 @@ export default function RecruiterMode() {
   const featuredProjects = portfolioProjects.slice(0, 3)
 
   return (
-    <main className="font-sans relative min-h-screen overflow-hidden bg-black text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.16),transparent_35%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgb(56_189_248/0.12),transparent_42%),radial-gradient(circle_at_bottom_right,rgb(168_85_247/0.12),transparent_35%)]" />
 
       <section className="relative mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-4 py-20 sm:px-6 lg:px-8">
         <div className="max-w-4xl">
@@ -45,7 +46,7 @@ export default function RecruiterMode() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-cyan-100"
+            className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-4 py-2 text-xs uppercase tracking-[0.24em] text-accent"
           >
             <BriefcaseBusiness className="h-3.5 w-3.5" />
             Recruiter Mode
@@ -55,7 +56,7 @@ export default function RecruiterMode() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="mt-6 text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-7xl"
+            className="font-archive mt-6 text-4xl font-black tracking-tight text-foreground sm:text-5xl lg:text-7xl"
           >
             A fast scan of what I build, how I ship, and why it matters.
           </motion.h1>
@@ -64,7 +65,7 @@ export default function RecruiterMode() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.12 }}
-            className="mt-6 max-w-2xl text-base leading-8 text-white/72 sm:text-lg"
+            className="mt-6 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg"
           >
             This view keeps the signal high: secure systems, full-stack delivery, and a few projects that show
             real product thinking.
@@ -78,7 +79,7 @@ export default function RecruiterMode() {
           >
             <a
               href={`mailto:${recruiterContacts.email}`}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black transition-transform hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <Mail className="h-4 w-4" />
               Email Me
@@ -87,7 +88,7 @@ export default function RecruiterMode() {
               href={recruiterContacts.linkedin}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <LinkedinIcon className="h-4 w-4" />
               LinkedIn
@@ -96,14 +97,14 @@ export default function RecruiterMode() {
               href={recruiterContacts.github}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <GithubIcon className="h-4 w-4" />
               GitHub
             </a>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-5 py-3 text-sm font-semibold text-cyan-50 transition-colors hover:bg-cyan-400/15"
+              className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <Sparkles className="h-4 w-4" />
               Full Portfolio
@@ -120,10 +121,10 @@ export default function RecruiterMode() {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.5, delay: index * 0.08 }}
             >
-              <Card className="h-full border-white/10 bg-white/[0.04] text-white backdrop-blur-xl">
+              <Card className="h-full border-border bg-card/70 backdrop-blur-xl">
                 <CardHeader>
                   <CardTitle className="text-lg">{item.title}</CardTitle>
-                  <CardDescription className="text-white/65">{item.body}</CardDescription>
+                  <CardDescription>{item.body}</CardDescription>
                 </CardHeader>
               </Card>
             </motion.div>
@@ -138,17 +139,24 @@ export default function RecruiterMode() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.55, delay: index * 0.08 }}
-              className="group rounded-3xl border border-white/12 bg-white/[0.03] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.42)] backdrop-blur-xl"
+              className={cn(
+                "group rounded-3xl border border-border bg-card/70 p-6 shadow-2xl backdrop-blur-xl",
+                "transition-colors hover:border-accent/40",
+              )}
             >
               <div className="flex items-center justify-between gap-3">
-                <Badge className="border border-white/15 bg-white/10 text-white/80">{project.tag}</Badge>
-                <span className="text-xs uppercase tracking-[0.18em] text-white/45">{project.status}</span>
+                <Badge variant="outline">{project.tag}</Badge>
+                <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {project.status}
+                </span>
               </div>
 
-              <h2 className="mt-5 text-2xl font-bold tracking-tight text-white">{project.title}</h2>
-              <p className="mt-4 text-sm leading-7 text-white/72">{project.summary}</p>
+              <h2 className="font-archive mt-5 text-2xl font-bold tracking-tight text-foreground">
+                {project.title}
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">{project.summary}</p>
 
-              <div className="mt-5 rounded-2xl border border-cyan-400/15 bg-cyan-400/8 p-4 text-sm text-cyan-50">
+              <div className="mt-5 rounded-2xl border border-accent/20 bg-accent-soft p-4 text-sm text-foreground">
                 {project.recruiterNote}
               </div>
 
@@ -156,7 +164,7 @@ export default function RecruiterMode() {
                 {project.stack.map((tech) => (
                   <span
                     key={tech}
-                    className="rounded-full border border-white/15 bg-white/[0.04] px-3 py-1 text-xs text-white/80"
+                    className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground/80"
                   >
                     {tech}
                   </span>
@@ -168,7 +176,7 @@ export default function RecruiterMode() {
                   href={project.repoUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/85 transition-colors hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   Repo
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -178,7 +186,7 @@ export default function RecruiterMode() {
                     href={project.liveUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-black transition-transform hover:-translate-y-0.5"
+                    className="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-background transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     Live Demo
                   </a>
@@ -187,7 +195,6 @@ export default function RecruiterMode() {
             </motion.article>
           ))}
         </div>
-
       </section>
     </main>
   )

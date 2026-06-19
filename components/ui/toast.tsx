@@ -1,13 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
+
+type ToastType = "success" | "error" | "warning"
 
 type ToastProps = {
   message: string
-  type?: "success" | "error" | "warning"
+  type?: ToastType
   duration?: number
   onClose: () => void
+}
+
+const variantStyles: Record<ToastType, string> = {
+  success: "border-success/40 bg-success/15 text-success",
+  warning: "border-warning/40 bg-warning/15 text-warning",
+  error: "border-danger/40 bg-danger/15 text-danger",
 }
 
 export function Toast({ message, type = "error", duration = 4000, onClose }: ToastProps) {
@@ -16,31 +25,28 @@ export function Toast({ message, type = "error", duration = 4000, onClose }: Toa
     return () => clearTimeout(timer)
   }, [duration, onClose])
 
-  const bgColor =
-    type === "success"
-      ? "bg-green-500/20 border-green-500/40"
-      : type === "warning"
-        ? "bg-yellow-500/20 border-yellow-500/40"
-        : "bg-red-500/20 border-red-500/40"
-
-  const textColor = type === "success" ? "text-green-200" : type === "warning" ? "text-yellow-200" : "text-red-200"
-
   return (
     <motion.div
       initial={{ opacity: 0, y: -20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      className={`fixed right-6 top-6 z-50 max-w-md rounded-lg border ${bgColor} px-4 py-3 shadow-2xl backdrop-blur-xl`}
+      role="status"
+      aria-live="polite"
+      className={cn(
+        "fixed right-6 top-6 z-50 max-w-md rounded-lg border px-4 py-3 shadow-2xl backdrop-blur-xl",
+        variantStyles[type],
+      )}
     >
       <div className="flex items-start gap-3">
         <div className="flex-1">
-          <p className={`text-sm font-medium ${textColor}`}>{message}</p>
+          <p className="text-sm font-medium">{message}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className={`text-lg leading-none ${textColor} opacity-70 transition-opacity hover:opacity-100`}
+          aria-label="Dismiss notification"
+          className="cursor-pointer text-lg leading-none opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
         >
           ×
         </button>
@@ -49,8 +55,10 @@ export function Toast({ message, type = "error", duration = 4000, onClose }: Toa
   )
 }
 
+type ToastItem = { id: number; message: string; type: ToastType }
+
 type ToastContainerProps = {
-  toasts: Array<{ id: number; message: string; type: "success" | "error" | "warning" }>
+  toasts: ToastItem[]
   onRemove: (id: number) => void
 }
 
@@ -64,7 +72,11 @@ export function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
           className="fixed right-6 z-50"
           layout
         >
-          <Toast message={toast.message} type={toast.type} onClose={() => onRemove(toast.id)} />
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => onRemove(toast.id)}
+          />
         </motion.div>
       ))}
     </AnimatePresence>

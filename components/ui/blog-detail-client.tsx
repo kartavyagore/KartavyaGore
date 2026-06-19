@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useScroll } from "framer-motion"
 import type { BlogPost } from "@/lib/blogs"
-import { ArrowLeft, X, Link as LinkIcon, Check } from "lucide-react"
+import { ArrowLeft, X, Link as LinkIcon, Check } from "@/lib/lucide-react"
 
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -293,21 +293,21 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
 
   if (!post) {
     return (
-      <main className="font-sans relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
+      <main className="font-space-grotesk relative min-h-screen bg-background px-4 py-24 text-foreground sm:px-6 lg:px-8">
         <ToastContainer toasts={toasts} onRemove={removeToast} />
-        <article className="mx-auto max-w-3xl rounded-3xl border border-white/15 bg-white/[0.03] p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
+        <article className="mx-auto max-w-3xl rounded-3xl border border-border bg-muted p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
           <div className="mb-6">
             <button
               type="button"
               onClick={() => router.back()}
-              className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/20"
+              className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-muted"
             >
               Go back
             </button>
           </div>
           <h1 className="text-2xl font-bold">Blog not found</h1>
-          <p className="mt-4 text-white/75">This blog may have been removed from local storage or never created.</p>
-          <Link href="/blogs" className="mt-6 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.16em] text-white">
+          <p className="mt-4 text-muted-foreground">This blog may have been removed from local storage or never created.</p>
+          <Link href="/blogs" className="mt-6 inline-block rounded-full border border-border bg-muted px-4 py-2 text-xs uppercase tracking-[0.16em] text-foreground">
             Back to Blogs
           </Link>
         </article>
@@ -316,7 +316,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   }
 
   return (
-    <main className="font-sans relative min-h-screen bg-black px-4 py-24 text-white sm:px-6 lg:px-8">
+    <main className="font-space-grotesk relative min-h-screen bg-background px-4 py-24 text-foreground sm:px-6 lg:px-8">
       <motion.div
         className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 origin-left z-50"
         style={{ scaleX: scrollYProgress }}
@@ -324,12 +324,12 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       
       <div className="mx-auto max-w-6xl flex flex-col xl:flex-row gap-8 items-start">
-        <article className="flex-1 w-full min-w-0 overflow-hidden rounded-3xl border border-white/15 bg-white/[0.03] p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
+        <article className="flex-1 w-full min-w-0 overflow-hidden rounded-3xl border border-border bg-muted p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => router.push("/blogs")}
-            className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/20"
+            className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-muted"
           >
             <ArrowLeft/>
           </button>
@@ -338,7 +338,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
               <button
                 type="button"
                 onClick={handleEdit}
-                className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/20"
+                className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-muted"
               >
                 Edit
               </button>
@@ -355,16 +355,16 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
             <button
               type="button"
               onClick={() => setShowAuthModal(true)}
-              className="text-xs uppercase tracking-[0.14em] text-white/50 transition-colors hover:text-white/80"
+              className="text-xs uppercase tracking-[0.14em] text-foreground/50 transition-colors hover:text-foreground/80"
             >
               Login to manage this blog
             </button>
           ) : null}
         </div>
 
-        <div className="mb-8 rounded-2xl border border-white/15 bg-gradient-to-r from-white/[0.08] via-white/[0.03] to-transparent p-6">
+        <div className="mb-8 rounded-2xl border border-border bg-gradient-to-r from-card via-muted to-transparent p-6">
           {imageSrc ? (
-            <div className="mb-6 overflow-hidden rounded-xl border border-white/10">
+            <div className="mb-6 overflow-hidden rounded-xl border border-border">
               <button
                 type="button"
                 onClick={() => setShowImagePreview(true)}
@@ -378,47 +378,47 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
               </button>
             </div>
           ) : null}
-          <p className="text-xs uppercase tracking-[0.18em] text-white/55">
+          <p className="text-xs uppercase tracking-[0.18em] text-foreground/55">
             {post.publishedAt} · {post.readTime}
           </p>
-          <h1 className="mt-4 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-3xl font-extrabold leading-tight text-transparent md:text-5xl">
+          <h1 className="mt-4 font-archive bg-gradient-to-r from-foreground via-blue-100 to-purple-200 bg-clip-text text-3xl font-extrabold leading-tight text-transparent md:text-5xl">
             {post.title}
           </h1>
-          <p className="mt-5 text-base leading-8 text-white/75">{post.excerpt}</p>
+          <p className="mt-5 text-base leading-8 text-muted-foreground">{post.excerpt}</p>
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
           {post.tags.map((tag) => (
-            <span key={tag} className="rounded-full border border-white/20 bg-white/[0.06] px-3 py-1 text-xs text-white/80">
+            <span key={tag} className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground/80">
               {tag}
             </span>
           ))}
         </div>
 
-        <div className="mt-10 rounded-2xl border border-white/10 bg-black/30 p-6 md:p-8">
-          <div className="text-white/85">
+        <div className="mt-10 rounded-2xl border border-border bg-card p-6 md:p-8">
+          <div className="text-foreground/85">
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]} 
               rehypePlugins={[rehypeSlug]}
               components={{
                 p: ({node, ...props}) => <div className="mb-6 leading-relaxed md:text-lg md:leading-8 last:mb-0 whitespace-pre-wrap" {...props} />,
-                h1: ({node, ...props}) => <h1 className="text-3xl font-extrabold text-white mt-12 mb-6" {...props} />,
-                h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-white mt-10 mb-5" {...props} />,
-                h3: ({node, ...props}) => <h3 className="text-xl font-bold text-white mt-8 mb-4" {...props} />,
-                h4: ({node, ...props}) => <h4 className="text-lg font-bold text-white mt-6 mb-4" {...props} />,
+                h1: ({node, ...props}) => <h1 className="text-3xl font-extrabold text-foreground mt-12 mb-6" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-foreground mt-10 mb-5" {...props} />,
+                h3: ({node, ...props}) => <h3 className="text-xl font-bold text-foreground mt-8 mb-4" {...props} />,
+                h4: ({node, ...props}) => <h4 className="text-lg font-bold text-foreground mt-6 mb-4" {...props} />,
                 ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-8 space-y-3 md:text-lg" {...props} />,
                 ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-8 space-y-3 md:text-lg" {...props} />,
                 li: ({node, ...props}) => <li className="leading-relaxed pl-1" {...props} />,
                 a: ({node, ...props}) => <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" {...props} />,
-                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500 pl-4 py-1 mb-8 text-white/70 italic bg-white/[0.02] rounded-r-lg" {...props} />,
+                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500 pl-4 py-1 mb-8 text-foreground/70 italic bg-muted rounded-r-lg" {...props} />,
                 code: ({node, inline, className, children, ...props}: any) => {
                   const match = /language-(\w+)/.exec(className || '')
                   const hasNewlines = typeof children === 'string' && children.includes('\n')
                   const isBlock = !inline || hasNewlines || match
 
                   return isBlock ? (
-                    <div className="relative mb-8 mt-4 rounded-xl overflow-hidden border border-white/10 bg-[#0d1117]">
-                      <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/10 text-xs text-white/50">
+                    <div className="relative mb-8 mt-4 rounded-xl overflow-hidden border border-border bg-[#0d1117]">
+                      <div className="flex items-center justify-between px-4 py-2 bg-muted border-b border-border text-xs text-foreground/50">
                         <span>{match?.[1] || 'code'}</span>
                       </div>
                       <pre className="p-4 overflow-x-auto text-sm text-purple-300">
@@ -428,7 +428,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                       </pre>
                     </div>
                   ) : (
-                    <code className="bg-white/10 text-purple-300 px-1.5 py-0.5 rounded text-sm font-sans" {...props}>
+                    <code className="bg-muted text-purple-300 px-1.5 py-0.5 rounded text-sm font-sans" {...props}>
                       {children}
                     </code>
                   )
@@ -445,12 +445,12 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
       <aside className="w-full xl:w-72 shrink-0 space-y-6 xl:sticky xl:top-24">
         {/* Table of Contents */}
         {toc.length > 0 && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-md">
-            <h3 className="text-xs uppercase tracking-[0.2em] text-white/50 mb-4 font-semibold">Table of Contents</h3>
+          <div className="rounded-2xl border border-border bg-muted p-6 backdrop-blur-md">
+            <h3 className="text-xs uppercase tracking-[0.2em] text-foreground/50 mb-4 font-semibold">Table of Contents</h3>
             <ul className="space-y-3 text-sm">
               {toc.map((item) => (
                 <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 12}px` }}>
-                  <a href={`#${item.id}`} className="text-white/70 hover:text-white transition-colors line-clamp-2">
+                  <a href={`#${item.id}`} className="text-foreground/70 hover:text-foreground transition-colors line-clamp-2">
                     {item.text}
                   </a>
                 </li>
@@ -460,16 +460,16 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
         )}
 
         {/* Social Share */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-md">
-          <h3 className="text-xs uppercase tracking-[0.2em] text-white/50 mb-4 font-semibold">Share this post</h3>
+        <div className="rounded-2xl border border-border bg-muted p-6 backdrop-blur-md">
+          <h3 className="text-xs uppercase tracking-[0.2em] text-foreground/50 mb-4 font-semibold">Share this post</h3>
           <div className="flex flex-wrap gap-2">
-            <button onClick={handleShareTwitter} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition-colors hover:bg-black hover:text-[#1DA1F2]">
+            <button onClick={handleShareTwitter} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted text-foreground/80 transition-colors hover:bg-overlay hover:text-[#1DA1F2]">
               <TwitterIcon className="h-4 w-4" />
             </button>
-            <button onClick={handleShareLinkedIn} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition-colors hover:bg-black hover:text-[#0A66C2]">
+            <button onClick={handleShareLinkedIn} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted text-foreground/80 transition-colors hover:bg-overlay hover:text-[#0A66C2]">
               <LinkedinIcon className="h-4 w-4" />
             </button>
-            <button onClick={handleCopyLink} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition-colors hover:bg-white/10 hover:text-white">
+            <button onClick={handleCopyLink} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted text-foreground/80 transition-colors hover:bg-muted hover:text-foreground">
               {copiedLink ? <Check className="h-4 w-4 text-green-400" /> : <LinkIcon className="h-4 w-4" />}
             </button>
           </div>
@@ -484,13 +484,13 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-overlay p-4"
             onClick={() => setShowImagePreview(false)}
           >
             <button
               type="button"
               onClick={() => setShowImagePreview(false)}
-              className="absolute right-4 top-4 rounded-full border border-white/25 bg-black/40 p-2 text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+              className="absolute right-4 top-4 rounded-full border border-border bg-overlay/40 p-2 text-foreground/85 transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Close image preview"
             >
               <X className="h-5 w-5" />
@@ -502,7 +502,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
               transition={{ duration: 0.2 }}
               src={imageSrc}
               alt={post.title}
-              className="max-h-[90vh] max-w-[95vw] rounded-xl border border-white/15 object-contain"
+              className="max-h-[90vh] max-w-[95vw] rounded-xl border border-border object-contain"
               onClick={(e) => e.stopPropagation()}
             />
           </motion.div>
@@ -516,7 +516,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm"
             onClick={() => {
               setShowAuthModal(false)
               setAdminPassword("")
@@ -529,21 +529,21 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="w-full max-w-md rounded-2xl border border-white/15 bg-black/90 p-6 shadow-2xl"
+              className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-semibold text-white">Admin Authentication</h3>
-              <p className="mt-2 text-sm text-white/60 mb-5">
+              <h3 className="text-xl font-semibold text-foreground">Admin Authentication</h3>
+              <p className="mt-2 text-sm text-foreground/60 mb-5">
                 Manage this blog post securely using MFA, Passkeys, or standard password.
               </p>
 
               {/* 3-Tab Selector */}
-              <div className="flex border-b border-white/10 mb-6">
+              <div className="flex border-b border-border mb-6">
                 <button
                   type="button"
                   onClick={() => setAuthMethod("passkey")}
                   className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "passkey" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                    authMethod === "passkey" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-foreground/70"
                   }`}
                 >
                   Passkey
@@ -552,7 +552,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                   type="button"
                   onClick={() => setAuthMethod("password")}
                   className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "password" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                    authMethod === "password" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-foreground/70"
                   }`}
                 >
                   Password
@@ -561,7 +561,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                   type="button"
                   onClick={() => setAuthMethod("mfa")}
                   className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "mfa" ? "border-b-2 border-blue-500 text-white" : "text-white/40 hover:text-white/70"
+                    authMethod === "mfa" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-foreground/70"
                   }`}
                 >
                   MFA Code
@@ -585,13 +585,13 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                       onKeyDown={(e) => e.key === "Enter" && handlePasswordLogin()}
                       placeholder="Enter admin password"
                       autoFocus
-                      className="w-full rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/40 focus:border-white/45"
+                      className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-accent focus:ring-2 focus:ring-accent/30"
                     />
                     <div className="mt-4 flex gap-3">
                       <button
                         type="button"
                         onClick={handlePasswordLogin}
-                        className="flex-1 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-white/20"
+                        className="flex-1 rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-muted"
                       >
                         Login
                       </button>
@@ -601,7 +601,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
 
                 {authMethod === "mfa" && (
                   <div className="grid gap-4">
-                    <p className="text-xs text-white/50 text-center leading-relaxed">
+                    <p className="text-xs text-foreground/50 text-center leading-relaxed">
                       Enter the 6-digit code generated by your Google Authenticator app.
                     </p>
                     <input
@@ -614,7 +614,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                       onChange={handleMfaCodeChange}
                       placeholder="000 000"
                       autoFocus
-                      className="w-full text-center text-xl tracking-[0.25em] font-sans rounded-lg border border-white/20 bg-black/40 px-3 py-2.5 text-white outline-none placeholder:text-white/25 focus:border-white/45 focus:border-blue-500/50"
+                      className="w-full text-center text-xl tracking-[0.25em] font-sans rounded-lg border border-border bg-surface px-3 py-2.5 text-foreground outline-none placeholder:text-foreground/25 focus:border-accent focus:ring-2 focus:ring-accent/30"
                     />
                     {isVerifyingMfa && (
                       <div className="flex items-center justify-center gap-2 py-2">
@@ -622,7 +622,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span className="text-xs text-white/60 font-semibold tracking-wider">Verifying code automatically...</span>
+                        <span className="text-xs text-foreground/60 font-semibold tracking-wider">Verifying code automatically...</span>
                       </div>
                     )}
                   </div>
@@ -637,7 +637,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                   setMfaCode("")
                   setAuthMethod("passkey")
                 }}
-                className="mt-6 w-full rounded-full border border-white/25 bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/90 transition-colors hover:bg-white/10"
+                className="mt-6 w-full rounded-full border border-border bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground/90 transition-colors hover:bg-muted"
               >
                 Cancel
               </button>

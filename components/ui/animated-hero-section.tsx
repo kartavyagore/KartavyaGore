@@ -1,9 +1,13 @@
 "use client"
 
-import Link from "next/link"
-import { useEffect, useRef } from "react"
-import { BriefcaseBusiness, Search } from "lucide-react"
+import * as React from "react"
+import { Search } from "@/lib/lucide-react"
+import { cn } from "@/lib/utils"
 
+// The Pong canvas uses hardcoded hex colors because Canvas 2D ignores CSS
+// custom properties. This is the only place in the design system where we
+// retain non-token colors — it's a deliberate brand moment, not a
+// themeable surface.
 const COLOR = "#FFFFFF"
 const HIT_COLOR = "#333333"
 const BACKGROUND_COLOR = "#000000"
@@ -173,18 +177,23 @@ interface Paddle {
 }
 
 export function PromptingIsAllYouNeed() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const pixelsRef = useRef<Pixel[]>([])
-  const ballRef = useRef<Ball>({ x: 0, y: 0, dx: 0, dy: 0, radius: 0 })
-  const paddlesRef = useRef<Paddle[]>([])
-  const scaleRef = useRef(1)
+  const canvasRef = React.useRef<HTMLCanvasElement>(null)
+  const pixelsRef = React.useRef<Pixel[]>([])
+  const ballRef = React.useRef<Ball>({ x: 0, y: 0, dx: 0, dy: 0, radius: 0 })
+  const paddlesRef = React.useRef<Paddle[]>([])
+  const scaleRef = React.useRef(1)
 
-  useEffect(() => {
+  React.useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
+
+    // Honor reduced motion: render the static pixel text once, no animation.
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth
@@ -268,8 +277,8 @@ export function PromptingIsAllYouNeed() {
       ballRef.current = {
         x: ballStartX,
         y: ballStartY,
-        dx: -BALL_SPEED,
-        dy: BALL_SPEED,
+        dx: prefersReducedMotion ? 0 : -BALL_SPEED,
+        dy: prefersReducedMotion ? 0 : BALL_SPEED,
         radius: adjustedLargePixelSize / 2,
       }
 
@@ -409,7 +418,12 @@ export function PromptingIsAllYouNeed() {
 
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
-    gameLoop()
+
+    if (!prefersReducedMotion) {
+      gameLoop()
+    } else {
+      drawGame()
+    }
 
     return () => {
       window.removeEventListener("resize", resizeCanvas)
@@ -433,27 +447,42 @@ export function PromptingIsAllYouNeed() {
         className="fixed top-0 left-0 h-full w-full"
         aria-label="Prompting Is All You Need: Fullscreen Pong game with pixel text"
       />
-      <div 
+      <button
+        type="button"
         onClick={handleOpenPalette}
-        className="fixed top-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-black/40 hover:bg-black/60 hover:border-white/20 backdrop-blur-md cursor-pointer select-none shadow-lg shadow-black/20 group active:scale-95 transition-all duration-300"
+        aria-label="Open command menu"
+        className={cn(
+          "fixed top-6 left-1/2 z-10 -translate-x-1/2 group",
+          "flex items-center gap-1.5 rounded-full border border-border bg-surface/70 px-3.5 py-1.5",
+          "cursor-pointer select-none shadow-lg backdrop-blur-md",
+          "transition-all duration-300 active:scale-95",
+          "hover:border-accent/40 hover:bg-surface/90",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        )}
       >
         {/* Mobile View: Clean Touch Button */}
-        <span className="flex sm:hidden items-center gap-1.5 text-xs font-sans text-white/70 hover:text-white transition-colors py-0.5 px-1">
-          <Search className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+        <span className="flex items-center gap-1.5 px-1 py-0.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground sm:hidden">
+          <Search className="h-3.5 w-3.5 animate-pulse text-emerald-500" />
           <span>Open Command Menu</span>
         </span>
 
         {/* Desktop View: Keyboard Shortcut Pill */}
-        <span className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-white/40 group-hover:text-white/80 transition-colors">
-          <span className="group-hover:-translate-x-0.5 transition-transform duration-300">Press</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white/60 text-[10px] font-sans font-medium group-hover:bg-white/10 group-hover:text-white/80 transition-colors">⌘ K</kbd>
-          <span className="text-[9px] text-white/30">or</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-white/60 text-[10px] font-sans font-medium group-hover:bg-white/10 group-hover:text-white/80 transition-colors">Ctrl K</kbd>
-          <span className="group-hover:translate-x-0.5 transition-transform duration-300">to navigate</span>
+        <span className="hidden font-mono text-[11px] text-muted-foreground transition-colors group-hover:text-foreground sm:flex sm:items-center sm:gap-1.5">
+          <span className="transition-transform duration-300 group-hover:-translate-x-0.5">
+            Press
+          </span>
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-sans text-[10px] font-medium text-foreground/70 transition-colors group-hover:bg-muted group-hover:text-foreground">
+            ⌘ K
+          </kbd>
+          <span className="text-[9px] text-muted-foreground/60">or</span>
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-sans text-[10px] font-medium text-foreground/70 transition-colors group-hover:bg-muted group-hover:text-foreground">
+            Ctrl K
+          </kbd>
+          <span className="transition-transform duration-300 group-hover:translate-x-0.5">
+            to navigate
+          </span>
         </span>
-      </div>
-
-      
+      </button>
     </>
   )
 }
