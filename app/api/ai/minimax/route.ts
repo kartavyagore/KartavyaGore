@@ -66,10 +66,13 @@ export async function POST(request: NextRequest) {
     return limited
   }
 
-  const config = getMiniMaxConfig()
+  const config = await getMiniMaxConfig()
   if (!config.configured) {
     return NextResponse.json(
-      { error: "NVIDIA_API_KEY is not configured on the server." },
+      {
+        error:
+          "NVIDIA API key is not configured. Save one via the Manage API KEY modal as an admin, or set NVIDIA_API_KEY in the environment.",
+      },
       { status: 503 },
     )
   }

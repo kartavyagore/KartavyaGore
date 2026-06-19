@@ -1,146 +1,25 @@
-import crypto from "crypto"
-import type { RowDataPacket } from "mysql2"
-import { getDbPool } from "./db"
+import { getApiKeyStatus, resolveApiKey, saveApiKey as saveApiKeyRaw, clearApiKey as clearApiKeyRaw, maskApiKey } from "./api-keys"
 
-interface GeminiKeyRow extends RowDataPacket {
-  setting_key: string
-  encrypted_value: string
-}
+export { maskApiKey }
 
 const SETTING_KEY = "gemini_api_key"
-const TABLE_NAME = "app_settings"
-
-function getEncryptionSecret() {
-  const secret = process.env.GEMINI_KEY_SECRET || process.env.JWT_SECRET || process.env.BLOG_ADMIN_SECRET
-  if (!secret) {
-    throw new Error("GEMINI_KEY_SECRET (or JWT_SECRET / BLOG_ADMIN_SECRET) is not set")
-  }
-  return secret
-}
-
-function getCipherKey() {
-  return crypto.createHash("sha256").update(getEncryptionSecret()).digest()
-}
-
-function encryptApiKey(apiKey: string) {
-  const iv = crypto.randomBytes(12)
-  const cipher = crypto.createCipheriv("aes-256-gcm", getCipherKey(), iv)
-  const encrypted = Buffer.concat([cipher.update(apiKey, "utf8"), cipher.final()])
-  const authTag = cipher.getAuthTag()
-  return [iv.toString("base64"), authTag.toString("base64"), encrypted.toString("base64")].join(":")
-}
-
-function decryptApiKey(payload: string) {
-  const [ivPart, authTagPart, encryptedPart] = payload.split(":")
-  if (!ivPart || !authTagPart || !encryptedPart) {
-    throw new Error("Invalid encrypted Gemini key payload")
-  }
-
-  const decipher = crypto.createDecipheriv(
-    "aes-256-gcm",
-    getCipherKey(),
-    Buffer.from(ivPart, "base64"),
-  )
-  decipher.setAuthTag(Buffer.from(authTagPart, "base64"))
-  const decrypted = Buffer.concat([
-    decipher.update(Buffer.from(encryptedPart, "base64")),
-    decipher.final(),
-  ])
-  return decrypted.toString("utf8")
-}
-
-async function ensureSettingsTable() {
-  const pool = getDbPool()
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
-      setting_key VARCHAR(100) PRIMARY KEY,
-      encrypted_value TEXT NOT NULL,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  `)
-}
+const ENV_VAR_NAME = "GEMINI_API_KEY"
 
 export async function saveGeminiApiKey(apiKey: string): Promise<void> {
-  const trimmedKey = apiKey.trim()
-  if (!trimmedKey) {
-    throw new Error("Gemini API key is required")
-  }
-
-  await ensureSettingsTable()
-  const pool = getDbPool()
-  const encrypted = encryptApiKey(trimmedKey)
-  await pool.query(
-    `INSERT INTO ${TABLE_NAME} (setting_key, encrypted_value) VALUES (?, ?)
-     ON DUPLICATE KEY UPDATE encrypted_value = VALUES(encrypted_value)`,
-    [SETTING_KEY, encrypted],
-  )
+  await saveApiKeyRaw(SETTING_KEY, apiKey)
 }
 
 export async function getGeminiApiKey(): Promise<string | null> {
-  await ensureSettingsTable()
-  const pool = getDbPool()
-  const [rows] = await pool.query<GeminiKeyRow[]>(
-    `SELECT setting_key, encrypted_value FROM ${TABLE_NAME} WHERE setting_key = ? LIMIT 1`,
-    [SETTING_KEY],
-  )
-
-  if (rows[0]) {
-    return decryptApiKey(rows[0].encrypted_value)
-  }
-
-  const envKey = process.env.GEMINI_API_KEY?.trim()
-  return envKey ? envKey : null
+  const { value } = await resolveApiKey(SETTING_KEY, ENV_VAR_NAME)
+  return value
 }
 
-export async function getGeminiKeyStatus(): Promise<{
-  configured: boolean
-  source: "database" | "environment" | "none"
-  preview: string | null
-}> {
-  await ensureSettingsTable()
-  const pool = getDbPool()
-  const [rows] = await pool.query<GeminiKeyRow[]>(
-    `SELECT setting_key, encrypted_value FROM ${TABLE_NAME} WHERE setting_key = ? LIMIT 1`,
-    [SETTING_KEY],
-  )
-
-  if (rows[0]) {
-    const apiKey = decryptApiKey(rows[0].encrypted_value)
-    return {
-      configured: true,
-      source: "database",
-      preview: maskApiKey(apiKey),
-    }
-  }
-
-  const envKey = process.env.GEMINI_API_KEY?.trim()
-  if (envKey) {
-    return {
-      configured: true,
-      source: "environment",
-      preview: maskApiKey(envKey),
-    }
-  }
-
-  return {
-    configured: false,
-    source: "none",
-    preview: null,
-  }
+export async function getGeminiKeyStatus() {
+  return getApiKeyStatus(SETTING_KEY, ENV_VAR_NAME)
 }
 
 export async function clearGeminiApiKey(): Promise<void> {
-  await ensureSettingsTable()
-  const pool = getDbPool()
-  await pool.query(`DELETE FROM ${TABLE_NAME} WHERE setting_key = ?`, [SETTING_KEY])
-}
-
-export function maskApiKey(apiKey: string): string {
-  const trimmed = apiKey.trim()
-  if (trimmed.length <= 8) {
-    return `${trimmed.slice(0, 2)}••••`
-  }
-  return `${trimmed.slice(0, 4)}••••${trimmed.slice(-4)}`
+  await clearApiKeyRaw(SETTING_KEY)
 }
 
 export type GeminiMode = "copilot" | "match" | "summary" | "search" | "intro"

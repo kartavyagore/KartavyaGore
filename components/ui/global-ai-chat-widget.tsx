@@ -10,6 +10,7 @@ import {
   Loader2,
   Send,
   Sparkles,
+  Trash,
   X,
 } from "@/lib/lucide-react"
 
@@ -67,9 +68,12 @@ export default function GlobalAiChatWidget() {
   const [copied, setCopied] = useState(false)
   const [authReady, setAuthReady] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [keyStatus, setKeyStatus] = useState<KeyStatus | null>(null)
+  const [geminiKeyStatus, setGeminiKeyStatus] = useState<KeyStatus | null>(null)
+  const [minimaxKeyStatus, setMinimaxKeyStatus] = useState<KeyStatus | null>(null)
   const [showKeyModal, setShowKeyModal] = useState(false)
-  const [apiKeyInput, setApiKeyInput] = useState("")
+  const [keyModalTab, setKeyModalTab] = useState<ChatModel>("minimax")
+  const [geminiKeyInput, setGeminiKeyInput] = useState("")
+  const [minimaxKeyInput, setMinimaxKeyInput] = useState("")
   const [showApiKey, setShowApiKey] = useState(false)
   const [savingKey, setSavingKey] = useState(false)
   const [blogs, setBlogs] = useState<BlogPost[]>([])
@@ -86,13 +90,21 @@ export default function GlobalAiChatWidget() {
       setIsAuthenticated(loggedIn)
       setAuthReady(true)
       if (!loggedIn) {
-        setKeyStatus(null)
+        setGeminiKeyStatus(null)
+        setMinimaxKeyStatus(null)
         setShowKeyModal(false)
       } else {
-        const statusResponse = await fetch("/api/admin/gemini-key", { credentials: "include" })
-        if (statusResponse.ok) {
-          const status = (await statusResponse.json()) as KeyStatus
-          setKeyStatus(status)
+        const [geminiRes, minimaxRes] = await Promise.all([
+          fetch("/api/admin/gemini-key", { credentials: "include" }),
+          fetch("/api/admin/minimax-key", { credentials: "include" }),
+        ])
+        if (geminiRes.ok) {
+          const status = (await geminiRes.json()) as KeyStatus
+          setGeminiKeyStatus(status)
+        }
+        if (minimaxRes.ok) {
+          const status = (await minimaxRes.json()) as KeyStatus
+          setMinimaxKeyStatus(status)
         }
       }
     } finally {
@@ -115,13 +127,21 @@ export default function GlobalAiChatWidget() {
         setAuthChecking(false)
 
         if (authResponse.ok) {
-          const statusResponse = await fetch("/api/admin/gemini-key", { credentials: "include" })
-          if (statusResponse.ok) {
-            const status = (await statusResponse.json()) as KeyStatus
-            setKeyStatus(status)
+          const [geminiRes, minimaxRes] = await Promise.all([
+            fetch("/api/admin/gemini-key", { credentials: "include" }),
+            fetch("/api/admin/minimax-key", { credentials: "include" }),
+          ])
+          if (geminiRes.ok) {
+            const status = (await geminiRes.json()) as KeyStatus
+            setGeminiKeyStatus(status)
+          }
+          if (minimaxRes.ok) {
+            const status = (await minimaxRes.json()) as KeyStatus
+            setMinimaxKeyStatus(status)
           }
         } else {
-          setKeyStatus(null)
+          setGeminiKeyStatus(null)
+          setMinimaxKeyStatus(null)
         }
 
         if (blogsResponse.ok) {
@@ -284,19 +304,55 @@ export default function GlobalAiChatWidget() {
     }
   }
 
-  const saveGeminiKey = async () => {
-    if (!apiKeyInput.trim()) {
-      showToast("Paste your Gemini API key first.", "warning")
+  const deleteApiKey = async () => {
+    const isMiniMax = keyModalTab === "minimax"
+    setSavingKey(true)
+    try {
+      const endpoint = isMiniMax ? "/api/admin/minimax-key" : "/api/admin/gemini-key"
+      const response = await fetch(endpoint, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { error?: string }
+        throw new Error(data.error || "Failed to remove API key")
+      }
+      if (isMiniMax) {
+        setMinimaxKeyStatus({ configured: false, source: "none", preview: null })
+      } else {
+        setGeminiKeyStatus({ configured: false, source: "none", preview: null })
+      }
+      showToast(
+        isMiniMax ? "NVIDIA API key removed" : "Gemini API key removed",
+        "success",
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to remove API key"
+      showToast(message, "error")
+    } finally {
+      setSavingKey(false)
+    }
+  }
+
+  const saveApiKey = async () => {
+    const isMiniMax = keyModalTab === "minimax"
+    const value = (isMiniMax ? minimaxKeyInput : geminiKeyInput).trim()
+    if (!value) {
+      showToast(
+        isMiniMax ? "Paste your NVIDIA API key first." : "Paste your Gemini API key first.",
+        "warning",
+      )
       return
     }
 
     setSavingKey(true)
     try {
-      const response = await fetch("/api/admin/gemini-key", {
+      const endpoint = isMiniMax ? "/api/admin/minimax-key" : "/api/admin/gemini-key"
+      const response = await fetch(endpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ apiKey: apiKeyInput.trim() }),
+        body: JSON.stringify({ apiKey: value }),
       })
 
       const data = (await response.json()) as {
@@ -306,19 +362,28 @@ export default function GlobalAiChatWidget() {
         preview?: string | null
       }
       if (!response.ok) {
-        throw new Error(data.error || "Failed to save Gemini API key")
+        throw new Error(data.error || "Failed to save API key")
       }
 
-      setKeyStatus({
+      const nextStatus: KeyStatus = {
         configured: Boolean(data.configured),
         source: data.source || "database",
         preview: data.preview || null,
-      })
-      setApiKeyInput("")
+      }
+      if (isMiniMax) {
+        setMinimaxKeyStatus(nextStatus)
+        setMinimaxKeyInput("")
+      } else {
+        setGeminiKeyStatus(nextStatus)
+        setGeminiKeyInput("")
+      }
       setShowKeyModal(false)
-      showToast("Gemini API key saved", "success")
+      showToast(
+        isMiniMax ? "NVIDIA API key saved" : "Gemini API key saved",
+        "success",
+      )
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to save Gemini API key"
+      const message = error instanceof Error ? error.message : "Failed to save API key"
       showToast(message, "error")
     } finally {
       setSavingKey(false)
@@ -501,91 +566,207 @@ export default function GlobalAiChatWidget() {
 
       <AnimatePresence>
         {showKeyModal ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay px-4 backdrop-blur-sm"
-            onClick={() => setShowKeyModal(false)}
-            role="dialog"
-            aria-label="Manage Gemini API key"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              onClick={(event) => event.stopPropagation()}
-              className="w-full max-w-lg rounded-3xl border border-border bg-surface p-6 text-foreground shadow-2xl"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-archive text-2xl font-bold">Manage API KEY</h3>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                    Save or replace your Google Gemini API key. It is encrypted in the database and used only on the server.
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowKeyModal(false)}
-                  aria-label="Close"
-                  className="shrink-0"
-                >
-                  ×
-                </Button>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Current status
-                  </label>
-                  <div className="rounded-2xl border border-border bg-muted px-4 py-3 text-sm text-foreground">
-                    {keyStatus?.configured
-                      ? `Configured via ${keyStatus.source}${keyStatus.preview ? ` · ${keyStatus.preview}` : ""}`
-                      : "No Gemini key saved yet."}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Gemini API key
-                  </label>
-                  <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3">
-                    <input
-                      type={showApiKey ? "text" : "password"}
-                      value={apiKeyInput}
-                      onChange={(e) => setApiKeyInput(e.target.value)}
-                      placeholder="Paste your Google Gemini API key"
-                      aria-label="Gemini API key"
-                      className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:outline-none"
-                    />
-                    <Button variant="ghost" size="sm" onClick={() => setShowApiKey((value) => !value)}>
-                      {showApiKey ? "Hide" : "Show"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button
-                  type="button"
-                  variant="default"
-                  onClick={saveGeminiKey}
-                  disabled={savingKey}
-                  className="gap-2 rounded-full px-5"
-                >
-                  {savingKey ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  Save key
-                </Button>
-                <Button variant="outline" onClick={() => setShowKeyModal(false)} className="rounded-full">
-                  Cancel
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
+          <KeyManagerModal
+            activeTab={keyModalTab}
+            onTabChange={(tab) => {
+              setKeyModalTab(tab)
+              setShowApiKey(false)
+            }}
+            onClose={() => setShowKeyModal(false)}
+            onSave={saveApiKey}
+            onRemove={deleteApiKey}
+            saving={savingKey}
+            showSecret={showApiKey}
+            onToggleSecret={() => setShowApiKey((value) => !value)}
+            statuses={{
+              gemini: geminiKeyStatus,
+              minimax: minimaxKeyStatus,
+            }}
+            inputs={{
+              gemini: geminiKeyInput,
+              minimax: minimaxKeyInput,
+            }}
+            setInputs={{
+              gemini: setGeminiKeyInput,
+              minimax: setMinimaxKeyInput,
+            }}
+          />
         ) : null}
       </AnimatePresence>
     </>
+  )
+}
+
+type KeyManagerModalProps = {
+  activeTab: ChatModel
+  onTabChange: (tab: ChatModel) => void
+  onClose: () => void
+  onSave: () => void
+  onRemove: () => void
+  saving: boolean
+  showSecret: boolean
+  onToggleSecret: () => void
+  statuses: Record<ChatModel, KeyStatus | null>
+  inputs: Record<ChatModel, string>
+  setInputs: Record<ChatModel, (value: string) => void>
+}
+
+const KEY_TAB_LABELS: Record<ChatModel, { label: string; endpoint: string; placeholder: string }> = {
+  minimax: {
+    label: "NVIDIA · MiniMax-M3",
+    endpoint: "integrate.api.nvidia.com",
+    placeholder: "Paste your nvapi-… NVIDIA key",
+  },
+  gemini: {
+    label: "Google · Gemini",
+    endpoint: "generativelanguage.googleapis.com",
+    placeholder: "Paste your Google Gemini API key",
+  },
+}
+
+function KeyManagerModal({
+  activeTab,
+  onTabChange,
+  onClose,
+  onSave,
+  onRemove,
+  saving,
+  showSecret,
+  onToggleSecret,
+  statuses,
+  inputs,
+  setInputs,
+}: KeyManagerModalProps) {
+  const activeMeta = KEY_TAB_LABELS[activeTab]
+  const activeStatus = statuses[activeTab]
+  const activeInput = inputs[activeTab]
+  const setActiveInput = setInputs[activeTab]
+  const storedInDatabase = activeStatus?.source === "database"
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay px-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-label="Manage API keys"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-lg rounded-3xl border border-border bg-surface p-6 text-foreground shadow-2xl"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="font-archive text-2xl font-bold">Manage API keys</h3>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+              Save, replace, or remove the AI provider keys. They are encrypted in the
+              database and used only on the server.
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close"
+            className="shrink-0"
+          >
+            ×
+          </Button>
+        </div>
+
+        <div
+          role="tablist"
+          aria-label="AI provider"
+          className="mt-6 inline-flex rounded-full border border-border bg-muted p-1"
+        >
+          {(Object.keys(KEY_TAB_LABELS) as ChatModel[]).map((option) => {
+            const isActive = option === activeTab
+            return (
+              <button
+                key={option}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => onTabChange(option)}
+                className={
+                  isActive
+                    ? "rounded-full bg-foreground px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-background"
+                    : "rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
+                }
+              >
+                {option === "minimax" ? "MiniMax-M3" : "Gemini"}
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              Current status · {activeMeta.label}
+            </label>
+            <div className="rounded-2xl border border-border bg-muted px-4 py-3 text-sm text-foreground">
+              {activeStatus?.configured
+                ? `Configured via ${activeStatus.source}${activeStatus.preview ? ` · ${activeStatus.preview}` : ""}`
+                : activeStatus === null
+                  ? "Checking…"
+                  : `No key saved yet. Falling back to env var (${activeMeta.endpoint}) — set one here to override.`}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              {activeTab === "minimax" ? "NVIDIA API key" : "Gemini API key"}
+            </label>
+            <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface px-4 py-3">
+              <input
+                type={showSecret ? "text" : "password"}
+                value={activeInput}
+                onChange={(event) => setActiveInput(event.target.value)}
+                placeholder={activeMeta.placeholder}
+                aria-label={activeTab === "minimax" ? "NVIDIA API key" : "Gemini API key"}
+                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:outline-none"
+              />
+              <Button variant="ghost" size="sm" onClick={onToggleSecret}>
+                {showSecret ? "Hide" : "Show"}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button
+            type="button"
+            variant="default"
+            onClick={onSave}
+            disabled={saving || !activeInput.trim()}
+            className="gap-2 rounded-full px-5"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            Save key
+          </Button>
+          {storedInDatabase ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onRemove}
+              disabled={saving}
+              className="gap-2 rounded-full border-danger/40 text-danger hover:bg-danger/10"
+            >
+              <Trash className="h-4 w-4" />
+              Remove stored key
+            </Button>
+          ) : null}
+          <Button variant="ghost" onClick={onClose} className="rounded-full">
+            Cancel
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
   )
 }
