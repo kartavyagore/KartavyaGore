@@ -11,6 +11,17 @@ export type PortfolioProject = {
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    title: "HealthJobsNow - Job Portal Application",
+    tag: "SaaS Product",
+    summary:
+      "A job portal application built in Java Full Stack. The centralized infrastructure for the healthcare students where they can apply to the jobs which posted by healthcare sector recruiter.",
+    stack: ["Next.js", "Java & Spring Boot", "Redis","Google JIB", "Docker", "MySQL", "AWS"],
+    status: "In ALPHA Testing",
+    liveUrl: "health-jobs-now-frontend.vercel.app",
+    repoUrl: "https://github.com/deccan-verse-08/health-jobs-now-frontend",
+    recruiterNote: "Shows product thinking around a recruiter-driven platform and backend architecture.",
+  },
+  {
     title: "Netflix Event Driven Architecture Microservice Backend Clone",
     tag: "Backend System",
     summary:
@@ -32,17 +43,7 @@ export const portfolioProjects: PortfolioProject[] = [
     repoUrl: "https://github.com/deccan-verse-08/NowOnCampus",
     recruiterNote: "Highlights auth work, admin workflows, and end-to-end product delivery.",
   },
-  {
-    title: "HealthJobsNow - Job Portal Application",
-    tag: "SaaS Product",
-    summary:
-      "A job portal application built in Java Full Stack. The centralized infrastructure for the healthcare students where they can apply to the jobs which posted by healthcare sector recruiter.",
-    stack: ["Next.js", "Java & Spring Boot", "Redis", "Docker", "PostgresQL", "AWS"],
-    status: "In Progress",
-    liveUrl: "",
-    repoUrl: "https://github.com/deccan-verse-08/health-jobs-now-backend",
-    recruiterNote: "Shows product thinking around a recruiter-driven platform and backend architecture.",
-  },
+  
   {
     title: "WorkSite - Job Portal Application",
     tag: "Web Application",
