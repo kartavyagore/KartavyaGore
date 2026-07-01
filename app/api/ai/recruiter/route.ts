@@ -143,6 +143,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       mode: body.mode,
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       result,
     })
   } catch (error) {

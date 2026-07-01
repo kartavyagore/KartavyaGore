@@ -2,89 +2,50 @@
 @plugin "@tailwindcss/typography";
 
 /* ---------------------------------------------------------------------------
-   Theme tokens
-   ---------------------------------------------------------------------------
-   Light = `:root` (default for browsers without a stored preference).
-   Dark  = `[data-theme="dark"]` (set by ThemeProvider on the <html> element).
+   Editorial tokens (fionavilmer.com).
 
-   The values here are referenced by `@theme inline` below, which surfaces
-   them as Tailwind v4 utility classes:
-     bg-background, text-foreground, border-border, bg-surface, text-surface,
-     bg-muted, text-muted-foreground, bg-card, text-card-foreground,
-     text-accent, bg-accent, text-accent-foreground, etc.
+   Pure white background, pure black text. No accent color. The only
+   "shading" in the design is the halftone hairlines between sections
+   and the inline thumbnail images embedded in the giant serif type.
+
+   Dark mode: pure black, pure white text, same rules (inverted).
 --------------------------------------------------------------------------- */
 
 :root {
-  --color-background: #fafafa;
-  --color-foreground: #09090b;
-  --color-surface: #ffffff;
-  --color-muted: #f4f4f5;
-  --color-muted-foreground: #52525b;
-  --color-border: #e4e4e7;
-  --color-card: #ffffff;
-  --color-card-foreground: #09090b;
-  --color-accent: #2563eb;
-  --color-accent-foreground: #ffffff;
-  --color-accent-soft: rgba(37, 99, 235, 0.1);
-  --color-success: #16a34a;
-  --color-success-foreground: #ecfdf5;
-  --color-warning: #d97706;
-  --color-warning-foreground: #fffbeb;
-  --color-danger: #dc2626;
-  --color-danger-foreground: #fef2f2;
-  --color-overlay: rgba(9, 9, 11, 0.5);
-  --shadow-button: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  --color-muted: #6a6a6a;
+  --color-rule: #000000;
+  --color-overlay: rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] {
-  --color-background: #09090b;
-  --color-foreground: #fafafa;
-  --color-surface: #18181b;
-  --color-muted: #27272a;
-  --color-muted-foreground: #a1a1aa;
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-card: #18181b;
-  --color-card-foreground: #fafafa;
-  --color-accent: #3b82f6;
-  --color-accent-foreground: #ffffff;
-  --color-accent-soft: rgba(59, 130, 246, 0.15);
-  --color-success: #22c55e;
-  --color-success-foreground: #052e16;
-  --color-warning: #f59e0b;
-  --color-warning-foreground: #451a03;
-  --color-danger: #ef4444;
-  --color-danger-foreground: #450a0a;
-  --color-overlay: rgba(0, 0, 0, 0.6);
-  --shadow-button: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  --color-muted: #8a8a8a;
+  --color-rule: #ffffff;
+  --color-overlay: rgba(255, 255, 255, 0.06);
 }
 
 @theme inline {
   --color-background: var(--color-background);
   --color-foreground: var(--color-foreground);
-  --color-surface: var(--color-surface);
   --color-muted: var(--color-muted);
-  --color-muted-foreground: var(--color-muted-foreground);
-  --color-border: var(--color-border);
-  --color-card: var(--color-card);
-  --color-card-foreground: var(--color-card-foreground);
-  --color-accent: var(--color-accent);
-  --color-accent-foreground: var(--color-accent-foreground);
-  --color-accent-soft: var(--color-accent-soft);
-  --color-success: var(--color-success);
-  --color-success-foreground: var(--color-success-foreground);
-  --color-warning: var(--color-warning);
-  --color-warning-foreground: var(--color-warning-foreground);
-  --color-danger: var(--color-danger);
-  --color-danger-foreground: var(--color-danger-foreground);
+  --color-muted-foreground: var(--color-muted);
+  --color-border: var(--color-rule);
+  --color-accent: var(--color-foreground);
+  --color-accent-foreground: var(--color-background);
   --color-overlay: var(--color-overlay);
-  --font-archive: var(--font-archive);
-  --font-space-grotesk: var(--font-space-grotesk);
-  --font-sans: var(--font-space-grotesk);
+  --color-rule: var(--color-rule);
+  --font-inter: var(--font-inter);
+  --font-playfair: var(--font-playfair);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
 /* ---------------------------------------------------------------------------
-   Base layer
+   Base
 --------------------------------------------------------------------------- */
 
 html,
@@ -95,40 +56,570 @@ body {
 
 body {
   margin: 0;
-  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* cmdk palette heading hook */
-[cmdk-group-heading] {
-  padding: 0.5rem 0.5rem;
-  font-weight: 600;
-  font-size: 0.75rem;
-  color: var(--color-muted-foreground);
+::selection {
+  background: var(--color-foreground);
+  color: var(--color-background);
+}
+
+/* ---------------------------------------------------------------------------
+   Links. Default: inherit text color, no underline.
+   Editorial "giant text" links show their underline only on hover.
+   Inline links inside prose keep their underline.
+--------------------------------------------------------------------------- */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-foreground);
+  outline-offset: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Typography primitives.
+
+   .kg-serif — Playfair Display. Use for the giant editorial copy.
+   .kg-sans  — Inter. Use only for the tiny UI labels and chrome.
+   .kg-label — A pre-set sans label style (uppercase, 0.18em tracking).
+
+   The editorial body sizes scale with viewport width via clamp().
+--------------------------------------------------------------------------- */
+
+.kg-serif {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.kg-sans {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+.kg-label {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: var(--color-foreground);
+  line-height: 1.4;
+}
+
+/* The huge display sizes used for hero / section opening lines.
+   Fluid from 4rem (mobile) to 10rem (wide desktop). */
+.kg-display {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(2.5rem, 6.7vw, 8rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+/* Project / post title row inside a section. Smaller than display
+   but still huge — clamp(1.5rem, 4vw, 4rem). */
+.kg-title {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(1.5rem, 4vw, 3.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.kg-body {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+}
+
+.kg-prose {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+
+.kg-prose p {
+  margin: 0 0 1.1em;
+}
+
+.kg-prose h1,
+.kg-prose h2,
+.kg-prose h3 {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 1.5em 0 0.6em;
+}
+
+.kg-prose h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
+.kg-prose h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+.kg-prose h3 { font-size: clamp(1.2rem, 2vw, 1.5rem); }
+
+.kg-prose a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+.kg-prose code,
+.kg-prose pre {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.kg-prose blockquote {
+  margin: 1.5em 0;
+  padding-left: 1.2em;
+  border-left: 1px solid currentColor;
+  font-style: italic;
+}
+
+.kg-prose ul,
+.kg-prose ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.2em;
+}
+
+.kg-prose li {
+  margin: 0.3em 0;
+}
+
+.kg-prose img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5em 0;
 }
 
 /* ---------------------------------------------------------------------------
-   Custom utilities (preserved from the previous design)
+   Page chrome
+
+   .kg-page  — a full-viewport-width container. Small horizontal gutter
+               (~24px) so text isn't flush to the viewport edge.
+   .kg-edge  — the actual gutter, used as a left/right padding.
 --------------------------------------------------------------------------- */
 
-.shadow-button {
-  box-shadow: var(--shadow-button);
+.kg-page {
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
-.shadow-button-inset {
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+.kg-edge {
+  padding-left: clamp(20px, 3vw, 56px);
+  padding-right: clamp(20px, 3vw, 56px);
 }
 
-.shadow-button-inset-dark {
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.05);
+/* The "Kartavya Datta Gore" / "KDG" wordmark, centered at the top
+   of the viewport. The button is absolutely positioned so it
+   sits in the visual center regardless of whether a CloseButton
+   is present in the right column.
+
+   The two labels overlap via absolute positioning inside the
+   relatively-positioned button, then crossfade. */
+.kg-wordmark {
+  position: absolute;
+  top: clamp(18px, 2.4vw, 32px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--color-foreground);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.kg-wordmark-label {
+  display: inline-block;
+  transition: opacity 220ms ease, transform 220ms ease;
+  will-change: opacity, transform;
+}
+
+/* Stack the two labels on top of each other so the crossfade
+   swaps them in place rather than side by side. */
+.kg-wordmark-label:first-of-type {
+  position: relative;
+}
+
+.kg-wordmark-label + .kg-wordmark-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.kg-wordmark-label-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.kg-wordmark-label-out {
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+}
+
+.kg-wordmark:hover {
+  opacity: 0.7;
+}
+
+/* The "Section / Section" label in the top-left of a section. */
+.kg-eyebrow {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+  line-height: 1;
+}
+
+/* The bottom-left URL breadcrumb and bottom-right language switcher. */
+.kg-breadcrumb {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--color-foreground);
+  line-height: 1;
+}
+
+.kg-toggle {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.kg-toggle:hover {
+  opacity: 0.7;
+}
+
+/* Close button (×) in the top-right of a zoomed-in view. */
+.kg-close {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--color-foreground);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.kg-close:hover {
+  opacity: 0.7;
 }
 
 /* ---------------------------------------------------------------------------
-   Accessibility: motion + contrast
+   Section row. Each section is one viewport tall by default, but
+   may be longer when its content is longer (the body grows).
+
+   A section is a clickable button-like element with a focusable
+   label. Hovering or focusing shows the underline on its label.
 --------------------------------------------------------------------------- */
+
+.kg-section {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: clamp(56px, 8vh, 96px);
+  padding-bottom: clamp(56px, 8vh, 96px);
+  width: 100%;
+}
+
+.kg-section-link {
+  color: inherit;
+  text-decoration: none;
+  display: inline-block;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 220ms ease;
+  padding-bottom: 2px;
+}
+
+.kg-section-link:hover,
+.kg-section-link:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* "Zoomed-in" state — when the user has clicked into a section. The
+   section expands to fill the viewport and the other sections are
+   pushed out of view. The element is full-screen in this state. */
+.kg-section-zoomed {
+  min-height: 100dvh;
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+   Collapsible section (used on the home page).
+
+   By default a section is half a viewport tall, with the giant
+   body clipped so only a sliver of the first line peeks. On hover
+   (or focus) the body scales up slightly and more text is revealed.
+   On click, the section navigates to its index page.
+--------------------------------------------------------------------------- */
+
+.kg-collapsible {
+  min-height: 50vh;
+  padding-top: clamp(40px, 6vh, 80px);
+  padding-bottom: clamp(40px, 6vh, 80px);
+  transition: background-color 220ms ease;
+}
+
+.kg-collapsible[data-hover="true"] {
+  background-color: var(--color-overlay);
+}
+
+.kg-collapsible-body {
+  overflow: hidden;
+  transition: max-height 320ms ease, transform 320ms ease;
+  will-change: max-height, transform;
+}
+
+/* The content wrapper inside a collapsible section. Hover handlers
+   live here (not on the outer <section>) so the scale-up only
+   triggers when the mouse is over actual content, not the section's
+   padding or the empty chrome strip. */
+.kg-collapsible-inner {
+  display: block;
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+   Halftone hairline rule.
+
+   The reference site uses a printed-newspaper-style rule: a row of
+   tiny dots. We approximate it with a CSS radial-gradient. The result
+   is a thin (1px) horizontal band of small black dots, repeating.
+
+   Use as <hr class="kg-rule" /> or as a separator between sections.
+--------------------------------------------------------------------------- */
+
+.kg-rule {
+  border: 0;
+  height: 4px;
+  width: 100%;
+  margin: 0;
+  background-image: radial-gradient(
+    circle,
+    var(--color-rule) 0.6px,
+    transparent 0.7px
+  );
+  background-size: 4px 4px;
+  background-position: 0 50%;
+  background-repeat: repeat-x;
+}
+
+/* A solid hairline, used for tiny chrome (table rows, captions). */
+.kg-rule-solid {
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+  height: 0;
+  width: 100%;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Inline thumbnail. A tiny grayscale image that sits inline within
+   the giant serif text. Implemented as a small <span> with a
+   background color, or a real <img> if one is available.
+--------------------------------------------------------------------------- */
+
+.kg-thumb {
+  display: inline-block;
+  width: clamp(28px, 3.2vw, 56px);
+  height: clamp(28px, 3.2vw, 56px);
+  vertical-align: -0.18em;
+  margin: 0 0.18em;
+  background: var(--color-overlay);
+  border: 1px solid var(--color-rule);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* The big image inside a zoomed-in project/blog detail. */
+.kg-feature {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--color-rule);
+  background: var(--color-overlay);
+}
+
+/* ---------------------------------------------------------------------------
+   Project / post title row.
+
+   "Title A; Title B; Title C;" — separated by semicolons, with tiny
+   inline thumbnails interspersed if a thumb is provided. The whole
+   row is a single huge serif sentence.
+--------------------------------------------------------------------------- */
+
+.kg-stream {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(1.75rem, 4.6vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--color-foreground);
+  text-wrap: balance;
+}
+
+.kg-stream a {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  transition: background-size 220ms ease;
+}
+
+.kg-stream a:hover,
+.kg-stream a:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* The interpunct "·" used between meta pieces (year, tag, role). */
+.kg-dot {
+  color: var(--color-muted);
+  margin: 0 0.5em;
+}
+
+/* ---------------------------------------------------------------------------
+   Detail view.
+
+   The "popped-out" full-screen detail view shows: a tiny eyebrow with
+   the parent section name, a huge title, the body, and a large
+   feature image. The × close button is in the top-right.
+--------------------------------------------------------------------------- */
+
+.kg-detail {
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.kg-detail-title {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(2.5rem, 7vw, 7rem);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  color: var(--color-foreground);
+  text-wrap: balance;
+}
+
+.kg-detail-meta {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Sticky chrome — wordmark top-left, close top-right, breadcrumb
+   bottom-left, toggle bottom-right. Applied to the root page
+   container so it overlays every section.
+
+   The container itself is pointer-events: none so it doesn't block
+   clicks on content underneath the empty area. Only the direct
+   children (the actual buttons / labels) are interactive.
+--------------------------------------------------------------------------- */
+
+.kg-chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 50;
+  padding: clamp(18px, 2.4vw, 32px);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.kg-chrome > * {
+  pointer-events: auto;
+}
+
+.kg-chrome-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 50;
+  padding: clamp(18px, 2.4vw, 32px);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.kg-chrome-bottom > * {
+  pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Animations
+
+   Subtle scroll-in fade. Disabled when prefers-reduced-motion: reduce.
+--------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .kg-rise {
+    animation: kg-rise 700ms ease both;
+  }
+}
+
+@keyframes kg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -141,11 +632,305 @@ body {
   }
 }
 
-@media (prefers-contrast: more) {
-  :root {
-    --color-border: #71717a;
-  }
-  [data-theme="dark"] {
-    --color-border: rgba(255, 255, 255, 0.25);
+/* ---------------------------------------------------------------------------
+   Recruiter / admin surfaces (kept on the old dark glassmorphism).
+   Scoped with the .kg-recruiter root class so it doesn't leak into
+   the public pages.
+--------------------------------------------------------------------------- */
+
+.kg-recruiter {
+  /* Reset the editorial defaults and fall back to the dark admin look. */
+  background: #0a0a0a;
+  color: #ededed;
+  min-height: 100dvh;
+}
+
+/* ---------------------------------------------------------------------------
+   AI chat widget (editorial paper-card).
+
+   - .kg-ai-trigger: the small "Ask" / "Close" label in the bottom-right
+     chrome column. Pure text, no icon.
+   - .kg-ai-panel: a paper card that pops up over the bottom-right of
+     the viewport. Off-white in light mode, near-black in dark, with
+     a single 1px hairline and no shadow.
+   - .kg-ai-msg: a single message bubble. User messages are right-
+     aligned with a subtle fill; assistant messages are left-aligned
+     and use the same editorial body type.
+   - .kg-ai-models: row of three small chip buttons for picking the
+     model (Auto / Gemini / MiniMax M3).
+   - .kg-ai-keys: admin-only section for managing API keys.
+--------------------------------------------------------------------------- */
+
+.kg-ai-trigger {
+  display: inline-block;
+  text-align: right;
+  margin-bottom: 0.4rem;
+}
+
+/* Hidden state — the trigger stays in the chrome column so the
+   column doesn't shift when the panel opens, but it's invisible
+   and not focusable. */
+.kg-ai-trigger-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Vertical stack of the AI trigger and the theme toggle, right-
+   aligned in the bottom-right corner of the bottom chrome. */
+.kg-chrome-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  line-height: 1;
+}
+
+.kg-ai-panel {
+  position: fixed;
+  right: clamp(18px, 2.4vw, 32px);
+  bottom: clamp(96px, 12vh, 130px);
+  z-index: 60;
+  width: min(420px, calc(100vw - 36px));
+  max-height: min(640px, 75vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-rule);
+  animation: kg-rise 220ms ease both;
+}
+
+.kg-ai-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem 0.6rem;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.kg-ai-panel-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.kg-ai-panel-foot {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem 1rem;
+  border-top: 1px solid var(--color-rule);
+}
+
+.kg-ai-input {
+  flex: 1 1 auto;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--color-foreground);
+  background: transparent;
+  border: 0;
+  padding: 0.3rem 0;
+  outline: none;
+  min-width: 0;
+}
+
+.kg-ai-input::placeholder {
+  color: var(--color-muted);
+}
+
+.kg-ai-input:focus-visible {
+  outline: none;
+}
+
+.kg-ai-send {
+  flex: 0 0 auto;
+}
+
+.kg-ai-msg {
+  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--color-rule);
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.kg-ai-msg-user {
+  align-self: flex-end;
+  max-width: 85%;
+  background: var(--color-overlay);
+}
+
+.kg-ai-msg-bot {
+  align-self: flex-start;
+  max-width: 95%;
+  background: transparent;
+}
+
+/* Wrapper around an assistant message + its model indicator. */
+.kg-ai-msg-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  max-width: 95%;
+}
+
+/* The tiny "Gemini" / "MiniMax M3" line under each assistant reply.
+   Muted color, no border, sits flush left. */
+.kg-ai-msg-model {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  padding-left: 0.15rem;
+  line-height: 1;
+  cursor: help;
+}
+
+.kg-ai-msg-loading {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--color-muted);
+  border: 0;
+  padding: 0;
+}
+
+.kg-ai-error {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--color-foreground);
+  background: var(--color-overlay);
+  padding: 0.6rem 1.2rem;
+  border-top: 1px solid var(--color-rule);
+  margin: 0;
+}
+
+/* Model selector chips — three small bordered buttons in a row.
+   The selected one inverts (ink fill). */
+.kg-ai-models {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem 0.2rem;
+}
+
+.kg-ai-model-chip {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+  background: var(--color-background);
+  border: 1.5px solid var(--color-foreground);
+  padding: 0.5rem 0.85rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.kg-ai-model-chip:hover {
+  background: var(--color-overlay);
+}
+
+.kg-ai-model-chip-on,
+.kg-ai-model-chip-on:hover {
+  background: var(--color-foreground);
+  color: var(--color-background);
+}
+
+/* Admin key-management disclosure. */
+.kg-ai-keys {
+  border-top: 1px solid var(--color-rule);
+  padding: 0.8rem 1.2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.kg-ai-keys-toggle {
+  align-self: flex-start;
+  text-transform: uppercase;
+}
+
+.kg-ai-keys-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.kg-ai-key-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--color-rule);
+}
+
+.kg-ai-key-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.kg-ai-key-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.kg-ai-key-status {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.kg-ai-key-row-input {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.kg-ai-key-clear {
+  align-self: flex-start;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.kg-ai-key-clear:hover {
+  color: var(--color-foreground);
+}
+
+.kg-ai-key-clear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 540px) {
+  .kg-ai-panel {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    bottom: 80px;
   }
 }

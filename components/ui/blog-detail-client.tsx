@@ -3,28 +3,16 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { AnimatePresence, motion, useScroll } from "framer-motion"
-import type { BlogPost } from "@/lib/blogs"
-import { ArrowLeft, X, Link as LinkIcon, Check } from "@/lib/lucide-react"
-
-const TwitterIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
-)
-
-const LinkedinIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-    <path fillRule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clipRule="evenodd" />
-  </svg>
-)
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeSlug from "rehype-slug"
 import GithubSlugger from "github-slugger"
+import type { BlogPost } from "@/lib/blogs"
 import { toRenderableImageSrc } from "@/lib/image-url"
 import { ToastContainer } from "./toast"
 import dynamic from "next/dynamic"
+import { Breadcrumb, ChromeBottomRight, CloseButton, Wordmark } from "@/components/chrome"
+import { SectionRule } from "@/components/section-rule"
 
 const PasskeyLogin = dynamic(() => import("./passkey-login"), { ssr: false })
 
@@ -46,13 +34,9 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
-  const [showImagePreview, setShowImagePreview] = useState(false)
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: "success" | "error" | "warning" }>>([])
   const toastCounterRef = useRef(0)
-  
-  const { scrollYProgress } = useScroll()
   const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>([])
-  const [copiedLink, setCopiedLink] = useState(false)
 
   useEffect(() => {
     if (!post?.content) return
@@ -70,22 +54,6 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
     setToc(extractedToc)
   }, [post?.content])
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : ""
-  
-  const handleShareTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post?.title || "")}`, "_blank")
-  }
-  
-  const handleShareLinkedIn = () => {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, "_blank")
-  }
-  
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl)
-    setCopiedLink(true)
-    setTimeout(() => setCopiedLink(false), 2000)
-  }
-
   useEffect(() => {
     fetch("/api/auth/verify", { credentials: "include" })
       .then((response) => {
@@ -93,27 +61,25 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
           setIsAuthenticated(true)
           return
         }
-
         const storedPassword = localStorage.getItem("blogAdminPassword")
         if (!storedPassword) {
           setIsAuthenticated(false)
           return
         }
-
         return fetch("/api/auth/password-login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ adminPassword: storedPassword }),
-        }).then((fallbackResponse) => {
-          if (fallbackResponse.status === 401) {
+        }).then((response) => {
+          if (response.status === 401) {
             localStorage.removeItem("blogAdminPassword")
             setAdminPassword("")
             setIsAuthenticated(false)
-            return
+          } else {
+            setAdminPassword(storedPassword)
+            setIsAuthenticated(true)
           }
-          setAdminPassword(storedPassword)
-          setIsAuthenticated(true)
         })
       })
       .catch(() => {
@@ -121,26 +87,21 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
         setAdminPassword("")
         setIsAuthenticated(false)
       })
-      .finally(() => {
-        setAuthCheckComplete(true)
-      })
+      .finally(() => setAuthCheckComplete(true))
   }, [])
 
   const showToast = (message: string, type: "success" | "error" | "warning" = "error") => {
     toastCounterRef.current += 1
-    setToasts((prev) => [...prev, { id: toastCounterRef.current, message, type }])
+    const id = toastCounterRef.current
+    setToasts((prev) => [...prev, { id, message, type }])
   }
+  const removeToast = (id: number) => setToasts((prev) => prev.filter((t) => t.id !== id))
 
-  const removeToast = (id: number) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id))
-  }
-
-  const handlePasswordLogin = async () => {
+  const handleLogin = async () => {
     if (!adminPassword.trim()) {
       showToast("Please enter admin password", "warning")
       return
     }
-
     try {
       const response = await fetch("/api/auth/password-login", {
         method: "POST",
@@ -148,19 +109,19 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
         credentials: "include",
         body: JSON.stringify({ adminPassword }),
       })
-
       if (response.status === 401) {
         showToast("Invalid password", "error")
+        setAdminPassword("")
         return
       }
-
-      localStorage.setItem("blogAdminPassword", adminPassword.trim())
+      localStorage.setItem("blogAdminPassword", adminPassword)
       setIsAuthenticated(true)
       setShowAuthModal(false)
       setShowPasswordFallback(false)
       showToast("Authenticated successfully!", "success")
     } catch {
       showToast("Authentication failed", "error")
+      setAdminPassword("")
     }
   }
 
@@ -170,7 +131,6 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
       showToast("Please enter a 6-digit MFA code", "warning")
       return
     }
-
     setIsVerifyingMfa(true)
     try {
       const response = await fetch("/api/auth/mfa-login", {
@@ -179,23 +139,19 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
         credentials: "include",
         body: JSON.stringify({ mfaCode: code }),
       })
-
       if (!response.ok) {
         const data = await response.json()
         showToast(data.error || "MFA validation failed", "error")
         setMfaCode("")
-        setIsVerifyingMfa(false)
         return
       }
-
       setIsAuthenticated(true)
       setShowAuthModal(false)
       setMfaCode("")
       setAuthMethod("passkey")
-      showToast("Authenticated successfully with Google Authenticator!", "success")
+      showToast("Authenticated with MFA", "success")
     } catch {
-      showToast("MFA verification failed. Please try again.", "error")
-      setMfaCode("")
+      showToast("MFA verification failed", "error")
     } finally {
       setIsVerifyingMfa(false)
     }
@@ -204,9 +160,7 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   const handleMfaCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, "")
     setMfaCode(value)
-    if (value.length === 6) {
-      handleMfaLogin(value)
-    }
+    if (value.length === 6) handleMfaLogin(value)
   }
 
   const handlePasskeySuccess = () => {
@@ -218,32 +172,13 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
 
   const ensureAuth = async (): Promise<boolean> => {
     if (isAuthenticated) return true
-
     try {
       const response = await fetch("/api/auth/verify", { credentials: "include" })
       if (response.ok) {
         setIsAuthenticated(true)
         return true
       }
-
-      const storedPassword = localStorage.getItem("blogAdminPassword")
-      if (storedPassword) {
-        const fallback = await fetch("/api/auth/password-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ adminPassword: storedPassword }),
-        })
-        if (fallback.ok) {
-          setAdminPassword(storedPassword)
-          setIsAuthenticated(true)
-          return true
-        }
-      }
-    } catch {
-      // ignore and show auth modal below
-    }
-
+    } catch {}
     setShowAuthModal(true)
     return false
   }
@@ -257,32 +192,21 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   const handleDelete = async () => {
     const ok = await ensureAuth()
     if (!ok) return
-    if (!confirm("Are you sure you want to delete this blog post?")) return
-
+    if (!confirm("Delete this post?")) return
     setIsDeleting(true)
     try {
       const params = new URLSearchParams({ slug })
-      if (adminPassword.trim()) {
-        params.set("adminPassword", adminPassword.trim())
-      }
+      if (adminPassword.trim()) params.set("adminPassword", adminPassword.trim())
       const response = await fetch(`/api/blogs?${params.toString()}`, {
         method: "DELETE",
         credentials: "include",
       })
-
       if (!response.ok) {
-        const payload = (await response.json()) as { error?: string }
-        if (response.status === 401) {
-          showToast("Authentication failed. Please login again.", "error")
-          setIsAuthenticated(false)
-          setShowAuthModal(true)
-          return
-        }
+        const payload = await response.json()
         showToast(payload.error || "Failed to delete blog", "error")
         return
       }
-
-      showToast("Blog deleted successfully!", "success")
+      showToast("Blog deleted", "success")
       router.push("/blogs")
     } catch {
       showToast("Failed to delete blog", "error")
@@ -293,52 +217,104 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
 
   if (!post) {
     return (
-      <main className="font-space-grotesk relative min-h-screen bg-background px-4 py-24 text-foreground sm:px-6 lg:px-8">
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
-        <article className="mx-auto max-w-3xl rounded-3xl border border-border bg-muted p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-muted"
-            >
-              Go back
-            </button>
-          </div>
-          <h1 className="text-2xl font-bold">Blog not found</h1>
-          <p className="mt-4 text-muted-foreground">This blog may have been removed from local storage or never created.</p>
-          <Link href="/blogs" className="mt-6 inline-block rounded-full border border-border bg-muted px-4 py-2 text-xs uppercase tracking-[0.16em] text-foreground">
-            Back to Blogs
-          </Link>
-        </article>
+      <main className="kg-page">
+        <div className="kg-chrome">
+          <Wordmark />
+          <CloseButton to="/blogs" />
+        </div>
+        <div className="kg-chrome-bottom">
+          <Breadcrumb path={`/blogs/${slug}`} />
+          <ChromeBottomRight />
+        </div>
+        <section className="kg-section kg-edge" aria-label="Not found">
+          <span className="kg-eyebrow">Writing</span>
+          <h1 className="kg-detail-title kg-rise" style={{ marginTop: "2.5rem" }}>
+            Post not found.
+          </h1>
+          <p className="kg-body kg-rise" style={{ marginTop: "2rem" }}>
+            <Link href="/blogs">← Back to writing</Link>
+          </p>
+        </section>
       </main>
     )
   }
 
   return (
-    <main className="font-space-grotesk relative min-h-screen bg-background px-4 py-24 text-foreground sm:px-6 lg:px-8">
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 origin-left z-50"
-        style={{ scaleX: scrollYProgress }}
-      />
+    <main className="kg-page">
+      <div className="kg-chrome">
+        <Wordmark />
+        <CloseButton to="/blogs" />
+      </div>
+      <div className="kg-chrome-bottom">
+        <Breadcrumb path={`/blogs/${slug}`} />
+        <ChromeBottomRight />
+      </div>
+
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-      
-      <div className="mx-auto max-w-6xl flex flex-col xl:flex-row gap-8 items-start">
-        <article className="flex-1 w-full min-w-0 overflow-hidden rounded-3xl border border-border bg-muted p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl md:p-10">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/blogs")}
-            className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-muted"
-          >
-            <ArrowLeft/>
-          </button>
+
+      <section className="kg-section kg-edge" aria-label={post.title}>
+        <span className="kg-eyebrow">Writing</span>
+        <h1 className="kg-detail-title kg-rise" style={{ marginTop: "2.5rem" }}>
+          {post.title}
+        </h1>
+        <p className="kg-detail-meta" style={{ marginTop: "1.5rem" }}>
+          {post.publishedAt}
+          <span className="kg-dot">·</span>
+          {post.readTime}
+        </p>
+        {post.tags.length > 0 ? (
+          <p className="kg-detail-meta" style={{ marginTop: "0.5rem" }}>
+            {post.tags.join(" · ")}
+          </p>
+        ) : null}
+      </section>
+
+      <SectionRule />
+
+      {imageSrc ? (
+        <section
+          className="kg-section kg-edge"
+          aria-label="Cover image"
+          style={{ minHeight: "auto", paddingTop: "4rem", paddingBottom: "4rem" }}
+        >
+          <span className="kg-eyebrow">Cover</span>
+          <div style={{ marginTop: "2.5rem" }}>
+            <img src={imageSrc} alt={post.title} className="kg-feature" />
+          </div>
+        </section>
+      ) : null}
+
+      {imageSrc ? <SectionRule /> : null}
+
+      <section
+        className="kg-section kg-edge"
+        aria-label="Body"
+        style={{ minHeight: "auto", paddingTop: "4rem", paddingBottom: "4rem" }}
+      >
+        <span className="kg-eyebrow">Body</span>
+        <div className="kg-prose kg-rise" style={{ marginTop: "2.5rem", maxWidth: "1100px" }}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>
+            {post.content}
+          </ReactMarkdown>
+        </div>
+      </section>
+
+      <SectionRule />
+
+      <section
+        className="kg-section kg-edge"
+        aria-label="Manage"
+        style={{ minHeight: "auto", paddingTop: "4rem", paddingBottom: "4rem" }}
+      >
+        <span className="kg-eyebrow">Manage</span>
+        <p className="kg-body kg-rise" style={{ marginTop: "2.5rem" }}>
           {isAuthenticated ? (
-            <div className="flex flex-wrap gap-2">
+            <span style={{ display: "inline-flex", gap: "1.5rem", flexWrap: "wrap" }}>
               <button
                 type="button"
                 onClick={handleEdit}
-                className="rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition-colors hover:bg-muted"
+                className="kg-toggle"
+                style={{ textDecoration: "underline", textUnderlineOffset: "0.32em" }}
               >
                 Edit
               </button>
@@ -346,305 +322,196 @@ export function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-red-200 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="kg-toggle"
+                style={{ textDecoration: "underline", textUnderlineOffset: "0.32em", opacity: isDeleting ? 0.5 : 1 }}
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </button>
-            </div>
+              <Link
+                href="/blogs"
+                className="kg-toggle"
+                style={{ textDecoration: "underline", textUnderlineOffset: "0.32em" }}
+              >
+                ← Back to writing
+              </Link>
+            </span>
           ) : authCheckComplete ? (
             <button
               type="button"
               onClick={() => setShowAuthModal(true)}
-              className="text-xs uppercase tracking-[0.14em] text-foreground/50 transition-colors hover:text-foreground/80"
+              className="kg-toggle"
+              style={{ textDecoration: "underline", textUnderlineOffset: "0.32em" }}
             >
-              Login to manage this blog
+              Login to manage this post
             </button>
           ) : null}
-        </div>
+        </p>
+      </section>
 
-        <div className="mb-8 rounded-2xl border border-border bg-gradient-to-r from-card via-muted to-transparent p-6">
-          {imageSrc ? (
-            <div className="mb-6 overflow-hidden rounded-xl border border-border">
-              <button
-                type="button"
-                onClick={() => setShowImagePreview(true)}
-                className="block w-full cursor-zoom-in"
-              >
-                <img
-                  src={imageSrc}
-                  alt={post.title}
-                  className="h-64 w-full object-cover md:h-80"
-                />
-              </button>
-            </div>
-          ) : null}
-          <p className="text-xs uppercase tracking-[0.18em] text-foreground/55">
-            {post.publishedAt} · {post.readTime}
-          </p>
-          <h1 className="mt-4 font-archive bg-gradient-to-r from-foreground via-blue-100 to-purple-200 bg-clip-text text-3xl font-extrabold leading-tight text-transparent md:text-5xl">
-            {post.title}
-          </h1>
-          <p className="mt-5 text-base leading-8 text-muted-foreground">{post.excerpt}</p>
-        </div>
+      {/* Auth modal — minimal editorial style */}
+      {showAuthModal ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Admin authentication"
+          className="fixed inset-0 z-[60] flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          onClick={() => {
+            setShowAuthModal(false)
+            setAdminPassword("")
+            setMfaCode("")
+            setAuthMethod("passkey")
+            setShowPasswordFallback(false)
+          }}
+        >
+          <div
+            className="kg-edge"
+            style={{
+              background: "var(--color-background)",
+              border: "1px solid var(--color-rule)",
+              padding: "3rem 2rem",
+              maxWidth: "520px",
+              width: "calc(100% - 4rem)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="kg-eyebrow">Admin</span>
+            <h2
+              className="kg-title kg-rise"
+              style={{ fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)", marginTop: "1rem" }}
+            >
+              Authenticate
+            </h2>
+            <p
+              className="kg-body"
+              style={{ marginTop: "1.5rem", fontSize: "1rem", lineHeight: 1.5 }}
+            >
+              Manage this post with a passkey, password, or MFA code.
+            </p>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {post.tags.map((tag) => (
-            <span key={tag} className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground/80">
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-10 rounded-2xl border border-border bg-card p-6 md:p-8">
-          <div className="text-foreground/85">
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm]} 
-              rehypePlugins={[rehypeSlug]}
-              components={{
-                p: ({node, ...props}) => <div className="mb-6 leading-relaxed md:text-lg md:leading-8 last:mb-0 whitespace-pre-wrap" {...props} />,
-                h1: ({node, ...props}) => <h1 className="text-3xl font-extrabold text-foreground mt-12 mb-6" {...props} />,
-                h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-foreground mt-10 mb-5" {...props} />,
-                h3: ({node, ...props}) => <h3 className="text-xl font-bold text-foreground mt-8 mb-4" {...props} />,
-                h4: ({node, ...props}) => <h4 className="text-lg font-bold text-foreground mt-6 mb-4" {...props} />,
-                ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-8 space-y-3 md:text-lg" {...props} />,
-                ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-8 space-y-3 md:text-lg" {...props} />,
-                li: ({node, ...props}) => <li className="leading-relaxed pl-1" {...props} />,
-                a: ({node, ...props}) => <a className="text-blue-400 hover:text-blue-300 underline underline-offset-4" {...props} />,
-                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-blue-500 pl-4 py-1 mb-8 text-foreground/70 italic bg-muted rounded-r-lg" {...props} />,
-                code: ({node, inline, className, children, ...props}: any) => {
-                  const match = /language-(\w+)/.exec(className || '')
-                  const hasNewlines = typeof children === 'string' && children.includes('\n')
-                  const isBlock = !inline || hasNewlines || match
-
-                  return isBlock ? (
-                    <div className="relative mb-8 mt-4 rounded-xl overflow-hidden border border-border bg-[#0d1117]">
-                      <div className="flex items-center justify-between px-4 py-2 bg-muted border-b border-border text-xs text-foreground/50">
-                        <span>{match?.[1] || 'code'}</span>
-                      </div>
-                      <pre className="p-4 overflow-x-auto text-sm text-purple-300">
-                        <code className={className} {...props}>
-                          {children}
-                        </code>
-                      </pre>
-                    </div>
-                  ) : (
-                    <code className="bg-muted text-purple-300 px-1.5 py-0.5 rounded text-sm font-sans" {...props}>
-                      {children}
-                    </code>
-                  )
-                }
+            <div
+              style={{
+                display: "flex",
+                gap: "1.5rem",
+                marginTop: "2rem",
+                borderBottom: "1px solid var(--color-rule)",
+                paddingBottom: "0.5rem",
               }}
             >
-              {post.content}
-            </ReactMarkdown>
-          </div>
-        </div>
-      </article>
-
-      {/* Sidebar for TOC and Share */}
-      <aside className="w-full xl:w-72 shrink-0 space-y-6 xl:sticky xl:top-24">
-        {/* Table of Contents */}
-        {toc.length > 0 && (
-          <div className="rounded-2xl border border-border bg-muted p-6 backdrop-blur-md">
-            <h3 className="text-xs uppercase tracking-[0.2em] text-foreground/50 mb-4 font-semibold">Table of Contents</h3>
-            <ul className="space-y-3 text-sm">
-              {toc.map((item) => (
-                <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 12}px` }}>
-                  <a href={`#${item.id}`} className="text-foreground/70 hover:text-foreground transition-colors line-clamp-2">
-                    {item.text}
-                  </a>
-                </li>
+              {(["passkey", "password", "mfa"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setAuthMethod(m)}
+                  className="kg-eyebrow"
+                  style={{
+                    borderBottom: authMethod === m ? "2px solid currentColor" : "2px solid transparent",
+                    paddingBottom: "0.5rem",
+                  }}
+                >
+                  {m === "mfa" ? "MFA Code" : m.charAt(0).toUpperCase() + m.slice(1)}
+                </button>
               ))}
-            </ul>
-          </div>
-        )}
+            </div>
 
-        {/* Social Share */}
-        <div className="rounded-2xl border border-border bg-muted p-6 backdrop-blur-md">
-          <h3 className="text-xs uppercase tracking-[0.2em] text-foreground/50 mb-4 font-semibold">Share this post</h3>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={handleShareTwitter} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted text-foreground/80 transition-colors hover:bg-overlay hover:text-[#1DA1F2]">
-              <TwitterIcon className="h-4 w-4" />
-            </button>
-            <button onClick={handleShareLinkedIn} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted text-foreground/80 transition-colors hover:bg-overlay hover:text-[#0A66C2]">
-              <LinkedinIcon className="h-4 w-4" />
-            </button>
-            <button onClick={handleCopyLink} className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted text-foreground/80 transition-colors hover:bg-muted hover:text-foreground">
-              {copiedLink ? <Check className="h-4 w-4 text-green-400" /> : <LinkIcon className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-      </aside>
-      </div>
+            <div style={{ marginTop: "2rem", minHeight: "100px" }}>
+              {authMethod === "passkey" ? (
+                <PasskeyLogin onSuccess={handlePasskeySuccess} showToast={showToast} />
+              ) : null}
 
-      <AnimatePresence>
-        {showImagePreview && imageSrc ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-overlay p-4"
-            onClick={() => setShowImagePreview(false)}
-          >
+              {authMethod === "password" ? (
+                <>
+                  <input
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                    placeholder="Admin password"
+                    autoFocus
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 0",
+                      background: "transparent",
+                      border: "0",
+                      borderBottom: "1px solid var(--color-rule)",
+                      color: "var(--color-foreground)",
+                      fontFamily: "var(--font-inter)",
+                      fontSize: "1rem",
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleLogin}
+                    className="kg-eyebrow"
+                    style={{
+                      marginTop: "1.5rem",
+                      textDecoration: "underline",
+                      textUnderlineOffset: "0.32em",
+                    }}
+                  >
+                    Login
+                  </button>
+                </>
+              ) : null}
+
+              {authMethod === "mfa" ? (
+                <div>
+                  <p className="kg-sans" style={{ fontSize: "0.85rem", color: "var(--color-muted)" }}>
+                    Enter the 6-digit code from your authenticator app.
+                  </p>
+                  <input
+                    type="text"
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={mfaCode}
+                    onChange={handleMfaCodeChange}
+                    placeholder="000000"
+                    autoFocus
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 0",
+                      background: "transparent",
+                      border: "0",
+                      borderBottom: "1px solid var(--color-rule)",
+                      color: "var(--color-foreground)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "1.5rem",
+                      letterSpacing: "0.25em",
+                      outline: "none",
+                    }}
+                  />
+                  {isVerifyingMfa ? (
+                    <p className="kg-eyebrow" style={{ marginTop: "1rem" }}>
+                      Verifying…
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
             <button
               type="button"
-              onClick={() => setShowImagePreview(false)}
-              className="absolute right-4 top-4 rounded-full border border-border bg-overlay/40 p-2 text-foreground/85 transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Close image preview"
+              onClick={() => {
+                setShowAuthModal(false)
+                setAdminPassword("")
+                setMfaCode("")
+                setAuthMethod("passkey")
+                setShowPasswordFallback(false)
+              }}
+              className="kg-eyebrow"
+              style={{
+                marginTop: "2.5rem",
+                textDecoration: "underline",
+                textUnderlineOffset: "0.32em",
+              }}
             >
-              <X className="h-5 w-5" />
+              Cancel
             </button>
-            <motion.img
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              src={imageSrc}
-              alt={post.title}
-              className="max-h-[90vh] max-w-[95vw] rounded-xl border border-border object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showAuthModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm"
-            onClick={() => {
-              setShowAuthModal(false)
-              setAdminPassword("")
-              setMfaCode("")
-              setAuthMethod("passkey")
-            }}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-xl font-semibold text-foreground">Admin Authentication</h3>
-              <p className="mt-2 text-sm text-foreground/60 mb-5">
-                Manage this blog post securely using MFA, Passkeys, or standard password.
-              </p>
-
-              {/* 3-Tab Selector */}
-              <div className="flex border-b border-border mb-6">
-                <button
-                  type="button"
-                  onClick={() => setAuthMethod("passkey")}
-                  className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "passkey" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-foreground/70"
-                  }`}
-                >
-                  Passkey
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAuthMethod("password")}
-                  className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "password" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-foreground/70"
-                  }`}
-                >
-                  Password
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAuthMethod("mfa")}
-                  className={`flex-1 pb-2.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200 ${
-                    authMethod === "mfa" ? "border-b-2 border-blue-500 text-foreground" : "text-foreground/40 hover:text-foreground/70"
-                  }`}
-                >
-                  MFA Code
-                </button>
-              </div>
-
-              <div className="mt-4 min-h-[140px] flex flex-col justify-center">
-                {authMethod === "passkey" && (
-                  <PasskeyLogin
-                    onSuccess={handlePasskeySuccess}
-                    showToast={showToast}
-                  />
-                )}
-
-                {authMethod === "password" && (
-                  <>
-                    <input
-                      type="password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handlePasswordLogin()}
-                      placeholder="Enter admin password"
-                      autoFocus
-                      className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-foreground/40 focus:border-accent focus:ring-2 focus:ring-accent/30"
-                    />
-                    <div className="mt-4 flex gap-3">
-                      <button
-                        type="button"
-                        onClick={handlePasswordLogin}
-                        className="flex-1 rounded-full border border-border bg-muted px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-muted"
-                      >
-                        Login
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {authMethod === "mfa" && (
-                  <div className="grid gap-4">
-                    <p className="text-xs text-foreground/50 text-center leading-relaxed">
-                      Enter the 6-digit code generated by your Google Authenticator app.
-                    </p>
-                    <input
-                      type="text"
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      maxLength={6}
-                      disabled={isVerifyingMfa}
-                      value={mfaCode}
-                      onChange={handleMfaCodeChange}
-                      placeholder="000 000"
-                      autoFocus
-                      className="w-full text-center text-xl tracking-[0.25em] font-sans rounded-lg border border-border bg-surface px-3 py-2.5 text-foreground outline-none placeholder:text-foreground/25 focus:border-accent focus:ring-2 focus:ring-accent/30"
-                    />
-                    {isVerifyingMfa && (
-                      <div className="flex items-center justify-center gap-2 py-2">
-                        <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span className="text-xs text-foreground/60 font-semibold tracking-wider">Verifying code automatically...</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAuthModal(false)
-                  setAdminPassword("")
-                  setMfaCode("")
-                  setAuthMethod("passkey")
-                }}
-                className="mt-6 w-full rounded-full border border-border bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground/90 transition-colors hover:bg-muted"
-              >
-                Cancel
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }
